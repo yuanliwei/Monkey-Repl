@@ -234,7 +234,7 @@ public class MonkeySourceShellViews {
      * requisite ids, and the command for querying the view.
      */
     public static class QueryViewCommand implements MonkeyCommand {
-        
+
         private static final String TAG = "MonkeyStub";
 
         // queryview [id type] [id(s)] [command]
@@ -282,7 +282,7 @@ public class MonkeySourceShellViews {
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
-                } while (tryCount < 100);
+                } while (tryCount < 10);
                 if (node == null) {
                     return new MonkeyCommandReturn(false, NO_NODE);
                 }
