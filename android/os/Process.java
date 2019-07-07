@@ -1,0 +1,71 @@
+package android.os;
+
+public class Process {
+   public static final int INVALID_UID = -1;
+   public static final int ROOT_UID = 0;
+   public static final int SYSTEM_UID = 1000;
+   public static final int PHONE_UID = 1001;
+   public static final int SHELL_UID = 2000;
+   public static final int LOG_UID = 1007;
+   public static final int WIFI_UID = 1010;
+   public static final int MEDIA_UID = 1013;
+   public static final int DRM_UID = 1019;
+   public static final int VPN_UID = 1016;
+   public static final int KEYSTORE_UID = 1017;
+   public static final int NFC_UID = 1027;
+   public static final int CLAT_UID = 1029;
+   public static final int BLUETOOTH_UID = 1002;
+   public static final int MEDIA_RW_GID = 1023;
+   public static final int PACKAGE_INFO_GID = 1032;
+   public static final int SHARED_RELRO_UID = 1037;
+   public static final int AUDIOSERVER_UID = 1041;
+   public static final int CAMERASERVER_UID = 1047;
+   public static final int DNS_TETHER_UID = 1052;
+   public static final int WEBVIEW_ZYGOTE_UID = 1053;
+   public static final int OTA_UPDATE_UID = 1061;
+   public static final int INCIDENTD_UID = 1067;
+   public static final int SE_UID = 1068;
+   public static final int NETWORK_STACK_UID = 1073;
+   public static final int NOBODY_UID = 9999;
+   public static final int FIRST_APPLICATION_UID = 10000;
+   public static final int LAST_APPLICATION_UID = 19999;
+   public static final int FIRST_ISOLATED_UID = 99000;
+   public static final int LAST_ISOLATED_UID = 99999;
+   public static final int SHARED_USER_GID = 9997;
+   public static final int FIRST_SHARED_APPLICATION_GID = 50000;
+   public static final int LAST_SHARED_APPLICATION_GID = 59999;
+   public static final int FIRST_APPLICATION_CACHE_GID = 20000;
+   public static final int LAST_APPLICATION_CACHE_GID = 29999;
+   public static final int THREAD_PRIORITY_DEFAULT = 0;
+   public static final int THREAD_PRIORITY_LOWEST = 19;
+   public static final int THREAD_PRIORITY_BACKGROUND = 10;
+   public static final int THREAD_PRIORITY_FOREGROUND = -2;
+   public static final int THREAD_PRIORITY_DISPLAY = -4;
+   public static final int THREAD_PRIORITY_URGENT_DISPLAY = -8;
+   public static final int THREAD_PRIORITY_VIDEO = -10;
+   public static final int THREAD_PRIORITY_AUDIO = -16;
+   public static final int THREAD_PRIORITY_URGENT_AUDIO = -19;
+   public static final int THREAD_PRIORITY_MORE_FAVORABLE = -1;
+   public static final int THREAD_PRIORITY_LESS_FAVORABLE = +1;
+   public static final int SCHED_OTHER = 0;
+   public static final int SCHED_FIFO = 1;
+   public static final int SCHED_RR = 2;
+   public static final int SCHED_BATCH = 3;
+   public static final int SCHED_IDLE = 5;
+   public static final int SCHED_RESET_ON_FORK = 0x40000000;
+   // declared in system/core/include/cutils/sched_policy.h,
+   public static final int THREAD_GROUP_DEFAULT = -1;
+   public static final int THREAD_GROUP_BG_NONINTERACTIVE = 0;
+
+   public static final int THREAD_GROUP_SYSTEM = 2;
+   public static final int THREAD_GROUP_AUDIO_APP = 3;
+   public static final int THREAD_GROUP_AUDIO_SYS = 4;
+   public static final int THREAD_GROUP_TOP_APP = 5;
+   public static final int THREAD_GROUP_RT_APP = 6;
+   public static final int THREAD_GROUP_RESTRICTED = 7;
+   public static final int SIGNAL_QUIT = 3;
+   public static final int SIGNAL_KILL = 9;
+   public static final int SIGNAL_USR1 = 10;
+
+   public static final native void setArgV0(String text);
+}
