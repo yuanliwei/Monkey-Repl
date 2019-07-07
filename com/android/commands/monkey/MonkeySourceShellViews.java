@@ -174,6 +174,9 @@ public class MonkeySourceShellViews {
 
         // text
         void loopViews(AccessibilityNodeInfo node, int deep, int index, StringBuilder sb) {
+            if (node == null) {
+                return;
+            }
             Rect bounds = new Rect();
             node.getBoundsInScreen(bounds);
 
@@ -198,6 +201,9 @@ public class MonkeySourceShellViews {
 
         // json
         void loopViews(AccessibilityNodeInfo node, int deep, int index, JSONObject jsObj) throws JSONException {
+            if (node == null) {
+                return;
+            }
             Rect bounds = new Rect();
             node.getBoundsInScreen(bounds);
             jsObj.put("deep", deep);

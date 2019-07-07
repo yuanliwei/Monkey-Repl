@@ -351,6 +351,16 @@ public class MonkeySourceShell implements MonkeyEventSource {
     }
 
     /**
+     * Command to echo a string
+     */
+    private static class EchoCommand implements MonkeyCommand {
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            String arg = command.get(1);
+            return new MonkeyCommandReturn(true, arg);
+        }
+    }
+
+    /**
      * Command to wake the device up
      */
     private static class WakeCommand implements MonkeyCommand {
@@ -493,6 +503,7 @@ public class MonkeySourceShell implements MonkeyEventSource {
         COMMAND_MAP.put("getviewswithtext", new MonkeySourceShellViews.GetViewsWithTextCommand());
         COMMAND_MAP.put("deferreturn", new DeferReturnCommand());
         COMMAND_MAP.put("takescreenshot", new MonkeySourceShellViews.TakeScreenshot());
+        COMMAND_MAP.put("echo", new EchoCommand());
     }
 
     // QUIT command
