@@ -52,7 +52,7 @@ function updateSourceList() {
     fs.writeFileSync('D:/gitPro/monkey-v2/source_list', files.join('\n'))
 }
 
-let filename = 'D:/gitPro/monkey-v2/android/graphics/Color.java'
+let filename = 'C:/Users/y/Desktop/nn/Monkey-Repl/android/app/ActivityManagerNative.java'
 let dir = 'D:/gitPro/monkey-v2/android'
 
 // loopDirFiles(dir).forEach(file => handleFileContent(file))

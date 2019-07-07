@@ -17,8 +17,10 @@
 package com.android.commands.monkey;
 
 import android.app.ActivityManager;
+import android.app.ActivityManagerNative;
 import android.app.IActivityController;
 import android.app.IActivityManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.IPackageManager;
 import android.os.Build;
@@ -144,13 +146,19 @@ public class Monkey {
      * @return Returns true if all system interfaces were available.
      */
     private boolean getSystemInterfaces() {
-        mAm = ActivityManager.getService();
+
+        try {
+            mAm = ActivityManager.getService();
+        } catch (Throwable e) {
+            mAm = ActivityManagerNative.getDefault();
+        }
+
         if (mAm == null) {
             Logger.err.println("** Error: Unable to connect to activity manager; is the system " + "running?");
             return false;
         }
 
-        mWm = IWindowManager.Stub.asInterface(ServiceManager.getService("window"));
+        mWm = IWindowManager.Stub.asInterface(ServiceManager.getService(Context.WINDOW_SERVICE));
         if (mWm == null) {
             Logger.err.println("** Error: Unable to connect to window manager; is the system " + "running?");
             return false;
@@ -162,7 +170,11 @@ public class Monkey {
             return false;
         }
 
-        mAm.setActivityController(new ActivityController(), true);
+        try {
+            mAm.setActivityController(new ActivityController(), true);
+        } catch (Throwable e) {
+            mAm.setActivityController(new ActivityController());
+        }
 
         return true;
     }

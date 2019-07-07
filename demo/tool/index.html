@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>tool</title>
+    <style>
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            padding: 0;
+            margin: 0;
+            background-color: bisque;
+        }
+
+        #screenshot {
+            max-height: 600px;
+            margin-left: 50px;
+            margin-top: 50px;
+        }
+
+        #canvas {
+            position: absolute;
+            left: 0;
+            top: 0;
+            background-color: #33333333;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="left">
+        <img id="screenshot" />
+        <canvas id="canvas"></canvas>
+    </div>
+</body>
+<script>
+    class App {
+        constructor() {
+            console.log('hello!');
+            this.canvas = new Canvas()
+            this.refresh()
+        }
+
+        async refresh() {
+            try {
+                await this.refreshImage()
+                await this.refreshLayout()
+            } catch (e) {
+                console.error(e);
+            }
+            // setTimeout(() => { this.refresh() }, 1000);
+        }
+
+        async refreshImage() {
+            let base64 = await HTTP.GET('/takescreenshot')
+            document.getElementById('screenshot').src = base64
+        }
+
+        async refreshLayout() {
+            this.canvas.setUp()
+            let tree = await HTTP.GET('/listviewtree')
+            console.log('tree');
+            // console.log(tree);
+            this.canvas.draw(JSON.parse(tree))
+        }
+    }
+
+    class Canvas {
+        constructor() {
+            this.img = document.getElementById('screenshot')
+            this.canvas = document.getElementById('canvas')
+            /** @param {CanvasRenderingContext2D} g */
+            this.g = this.canvas.getContext('2d')
+        }
+
+        setUp() {
+            const { canvas, g, img } = this
+            canvas.style.left = img.offsetLeft + 'px'
+            canvas.style.top = img.offsetTop + 'px'
+            canvas.style.width = img.clientWidth + 'px'
+            canvas.style.height = img.clientHeight + 'px'
+            this.width = img.clientWidth
+            this.height = img.clientHeight
+            canvas.width = img.clientWidth
+            canvas.height = img.clientHeight
+        }
+
+        /**
+         * @param {CanvasRenderingContext2D} g
+         */
+        draw(tree) {
+            const { canvas, g, img, width, height } = this
+            let getRect = (bounds) => bounds.match(/\[(\d+),(\d+)\]\[(\d+),(\d+)\]/).slice(1).map(o => parseInt(o))
+            const [x, y, w, h] = getRect(tree.bounds)
+            const scale = width / w
+            console.log('scale', scale);
+
+            console.log(x, y, w, h);
+            let arr = []
+            let loop = (node) => { arr.push(node); node.childrens && node.childrens.forEach(o => loop(o)) }
+            loop(tree)
+            // g.beginPath()
+            g.strokeStyle = 'rgba(255,0,0,0.2)'
+            g.lineWidth = 1
+            arr.forEach(o => {
+                let [x1, y1, x2, y2] = getRect(o.bounds)
+                let [w, h] = [x2 - x1, y2 - y1]
+                g.strokeRect(x1 * scale, y1 * scale, w * scale, h * scale)
+                // console.log(o.bounds);
+                // console.log(x1 * scale, y1 * scale, w * scale, h * scale);
+            })
+            // g.closePath()
+            // g.stroke()
+
+
+
+        }
+    }
+
+    class HTTP {
+        static GET(url) {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('GET', url, true)
+                request.onreadystatechange = () => {
+                    // console.log(' - readyState:' + request.readyState + ' status:' + request.status)
+                    if (request.readyState == 4) {
+                        resolve(request.responseText)
+                    }
+                }
+                request.onerror = (a, b, c) => {
+                    console.log(a, b, c);
+                }
+                request.send()
+            });
+        }
+
+        static POST(url, data) {
+            return new Promise(function (resolve, reject) {
+                var request = new XMLHttpRequest()
+                request.open('POST', url, true)
+                request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
+                request.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+                request.onreadystatechange = () => {
+                    console.log(' - readyState:' + request.readyState + ' status:' + request.status)
+                    if (request.readyState == 4) {
+                        resolve(request.responseText)
+                    }
+                }
+                request.send(data)
+            });
+        }
+    }
+</script>
+<script>
+    new App()
+</script>
+
+</html>

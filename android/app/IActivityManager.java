@@ -27,6 +27,7 @@ public interface IActivityManager extends android.os.IInterface {
     }
 
     void setActivityController(IActivityController watcher, boolean imAMonkey);
+    void setActivityController(IActivityController watcher);
 
     Intent registerReceiver(IApplicationThread caller, String callerPackage, IIntentReceiver receiver,
             IntentFilter filter, String requiredPermission, int userId, int flags);

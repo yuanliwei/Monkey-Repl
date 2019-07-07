@@ -473,7 +473,11 @@ public class MonkeySourceShell implements MonkeyEventSource {
     private static final boolean wake() {
         IPowerManager pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE));
         try {
-            pm.wakeUp(SystemClock.uptimeMillis(), "Monkey", null);
+            try {
+                pm.wakeUp(SystemClock.uptimeMillis(), "Monkey", null);
+            } catch (NoSuchMethodError error) {
+                pm.wakeUp(SystemClock.uptimeMillis());
+            }
         } catch (RemoteException e) {
             Log.e(TAG, "Got remote exception", e);
             return false;
@@ -508,8 +512,6 @@ public class MonkeySourceShell implements MonkeyEventSource {
 
     // QUIT command
     private static final String QUIT = "quit";
-    // DONE command
-    private static final String DONE = "done";
 
     // command response strings
     private static final String OK_STR = "OK";
