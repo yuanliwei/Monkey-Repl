@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.StringTokenizer;
@@ -504,6 +505,7 @@ public class MonkeySourceShell implements MonkeyEventSource {
         COMMAND_MAP.put("getvar", new MonkeySourceShellVars.GetVarCommand());
         COMMAND_MAP.put("queryview", new MonkeySourceShellViews.QueryViewCommand());
         COMMAND_MAP.put("getrootview", new MonkeySourceShellViews.GetRootViewCommand());
+        COMMAND_MAP.put("getisviewchange", new MonkeySourceShellViews.GetIsChangeCommand());
         COMMAND_MAP.put("getviewswithtext", new MonkeySourceShellViews.GetViewsWithTextCommand());
         COMMAND_MAP.put("deferreturn", new DeferReturnCommand());
         COMMAND_MAP.put("takescreenshot", new MonkeySourceShellViews.TakeScreenshot());
@@ -728,7 +730,9 @@ public class MonkeySourceShell implements MonkeyEventSource {
                 }
 
                 // Translate the command line. This will handle returning error/ok to the user
+                long time = System.currentTimeMillis();
                 translateCommand(command);
+                Log.i(TAG, "translateCommand used time : " + String.format(Locale.getDefault(), "% 6d", System.currentTimeMillis() - time) + " , command : " + command);
             }
         } catch (Exception e) {
             e.printStackTrace();

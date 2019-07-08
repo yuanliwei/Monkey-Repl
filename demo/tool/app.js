@@ -18,9 +18,8 @@ let wait = () => new Promise((resolve) => {
         chunks = [];
     shell.stdout.removeAllListeners('data');
     shell.stdout.on('data', (chunk) => {
-        console.log("CHUNK:",chunk);
-        
-        if (!chunk.startsWith('OK:')) return;
+        // console.log("CHUNK:",chunk);
+        // if (!chunk.startsWith('OK:')) return;
         chunks.push(chunk);
         if (chunk.includes(unique)) resolve(chunks.join('').replace(unique, ''))
     });
@@ -88,7 +87,7 @@ server.listen(PORT);
 console.log("Server runing at port: " + PORT + ".");
 
 async function takescreenshot(req, resp) {
-    let screenshot = await query('takescreenshot scale 0.3')
+    let screenshot = await query('takescreenshot scale 0.8')
     screenshot = screenshot.replace(/[\r|\n]/g, '')
     resp.writeHead(200, { 'Content-Type': 'image/jpeg' });
     resp.write(`data:image/jpeg;base64,${screenshot}`);

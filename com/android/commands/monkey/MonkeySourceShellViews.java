@@ -34,6 +34,7 @@ import org.json.JSONObject;
 
 import android.app.UiAutomation;
 import android.app.UiAutomationConnection;
+import android.app.UiAutomation.OnAccessibilityEventListener;
 import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.Color;
@@ -44,6 +45,7 @@ import android.os.HandlerThread;
 import android.util.Base64;
 import android.util.Log;
 import android.view.Display;
+import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityInteractionClient;
 import android.view.accessibility.AccessibilityNodeInfo;
 import android.view.accessibility.AccessibilityWindowInfo;
@@ -57,6 +59,31 @@ public class MonkeySourceShellViews {
     protected static UiAutomation sUiTestAutomationBridge;
 
     private static UiAutomationConnection mUiAutomationConnection;
+
+    private static boolean hasStateChange = true;
+    private static int itemCount = -1;
+    private static int currentItemIndex = -1;
+    private static int fromIndex = -1;
+    private static int toIndex = -1;
+    private static int windowId = -1;
+    private static String packageName = "";
+    private static long sourceNodeId = -1;
+
+    private static OnAccessibilityEventListener listener = new OnAccessibilityEventListener() {
+
+        @Override
+        public void onAccessibilityEvent(AccessibilityEvent event) {
+            hasStateChange = true;
+            itemCount = event.getItemCount();
+            currentItemIndex = event.getCurrentItemIndex();
+            fromIndex = event.getFromIndex();
+            toIndex = event.getToIndex();
+            windowId = event.getWindowId();
+            packageName = event.getPackageName().toString();
+            sourceNodeId = event.getSourceNodeId();
+        }
+
+    };
 
     private static final String HANDLER_THREAD_NAME = "UiAutomationHandlerThread";
 
@@ -101,6 +128,7 @@ public class MonkeySourceShellViews {
         sHandlerThread.start();
         mUiAutomationConnection = new UiAutomationConnection();
         sUiTestAutomationBridge = new UiAutomation(sHandlerThread.getLooper(), mUiAutomationConnection);
+        sUiTestAutomationBridge.setOnAccessibilityEventListener(listener);
         sUiTestAutomationBridge.connect();
     }
 
@@ -195,7 +223,9 @@ public class MonkeySourceShellViews {
             int childCount = node.getChildCount();
             for (int i = 0; i < childCount; i++) {
                 AccessibilityNodeInfo child = node.getChild(i);
-                loopViews(child, deep + 1, i, sb);
+                if (child != null) {
+                    loopViews(child, deep + 1, i, sb);
+                }
             }
         }
 
@@ -228,9 +258,11 @@ public class MonkeySourceShellViews {
             int childCount = node.getChildCount();
             for (int i = 0; i < childCount; i++) {
                 AccessibilityNodeInfo child = node.getChild(i);
-                JSONObject jsObjChild = new JSONObject();
-                loopViews(child, deep + 1, i, jsObjChild);
-                jsArr.put(jsObjChild);
+                if (child != null) {
+                    JSONObject jsObjChild = new JSONObject();
+                    loopViews(child, deep + 1, i, jsObjChild);
+                    jsArr.put(jsObjChild);
+                }
             }
         }
     }
@@ -314,6 +346,16 @@ public class MonkeySourceShellViews {
         }
     }
 
+    public static class GetIsChangeCommand implements MonkeyCommand {
+        // getrootview
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+
+            String res = String.valueOf(hasStateChange);
+            hasStateChange = false;
+            return new MonkeyCommandReturn(true, res);
+        }
+    }
+
     /**
      * A command that returns the accessibility ids of the views that contain the
      * given text. It takes a string of text and returns the accessibility ids of
@@ -386,7 +428,8 @@ public class MonkeySourceShellViews {
                     } catch (Throwable e) {
                         // bitmap = mUiAutomationConnection.takeScreenshot(rect.width(), rect.height());
                         bitmap = sUiTestAutomationBridge.takeScreenshot();
-                        bitmap = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height(), null, false);
+                        bitmap = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height(), null,
+                                false);
                     }
                 } else {
                     // takescreenshot

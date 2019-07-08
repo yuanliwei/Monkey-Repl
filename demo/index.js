@@ -19,12 +19,16 @@ let clickText = (text) => new Promise(async (resolve) => { await waitFor(text); 
 let findEditText = () => new Promise(async (resolve) => { let tree = await query(`queryview gettree text`); let rects = tree.split('\n').filter(o => o.includes('class=android.widget.EditText')).map(o => getRectInLine(o)); resolve(rects) })
 
 async function start() {
-    await sleep(1000)
+    await sleep(100)
     let location = await query('queryview getlocation')
     console.log('getlocation : |', location, '|');
     // let screenshot = await query('takescreenshot scale 0.3')
     // screenshot = screenshot.replace(/[\r|\n]/g, '')
     // console.log('screenshot', 'data:image/jpeg;base64,' + screenshot);
+    while(true){
+        let s = await query('getisviewchange')
+        console.log(`query('queryview ischange = ')`,s);
+    }
     run('quit')
 }
 
