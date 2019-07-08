@@ -33,6 +33,8 @@ public interface IUiAutomationConnection extends android.os.IInterface {
 
     boolean setRotation(int rotation);
 
+    Bitmap takeScreenshot(int width, int height);
+
     Bitmap takeScreenshot(Rect crop, int rotation);
 
     boolean clearWindowContentFrameStats(int windowId);

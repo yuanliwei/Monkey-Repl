@@ -381,7 +381,13 @@ public class MonkeySourceShellViews {
                     // takescreenshot rect 30 30 50 50
                     Display display = DisplayManagerGlobal.getInstance().getRealDisplay(Display.DEFAULT_DISPLAY);
                     int rotation = display.getRotation();
-                    bitmap = mUiAutomationConnection.takeScreenshot(rect, rotation);
+                    try {
+                        bitmap = mUiAutomationConnection.takeScreenshot(rect, rotation);
+                    } catch (Throwable e) {
+                        // bitmap = mUiAutomationConnection.takeScreenshot(rect.width(), rect.height());
+                        bitmap = sUiTestAutomationBridge.takeScreenshot();
+                        bitmap = Bitmap.createBitmap(bitmap, rect.left, rect.top, rect.width(), rect.height(), null, false);
+                    }
                 } else {
                     // takescreenshot
                     bitmap = sUiTestAutomationBridge.takeScreenshot();

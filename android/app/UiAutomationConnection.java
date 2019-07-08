@@ -85,4 +85,9 @@ public final class UiAutomationConnection extends IUiAutomationConnection.Stub {
         throw new RuntimeException("Stub!");
     }
 
+    @Override
+    public Bitmap takeScreenshot(int width, int height) {
+        throw new RuntimeException("Stub!");
+    }
+
 }
