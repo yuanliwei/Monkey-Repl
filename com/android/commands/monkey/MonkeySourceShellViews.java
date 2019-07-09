@@ -249,6 +249,9 @@ public class MonkeySourceShellViews {
             jsObj.put("isClickable", node.isClickable());
             jsObj.put("isCheckable", node.isCheckable());
             jsObj.put("isChecked", node.isChecked());
+            jsObj.put("isVisibleToUser", node.isVisibleToUser());
+            jsObj.put("isAccessibilityFocused", node.isAccessibilityFocused());
+
             int viewId = AccessibilityNodeInfo.getAccessibilityViewId(node.getSourceNodeId());
             jsObj.put("windowId", node.getWindowId());
             jsObj.put("viewId", viewId);

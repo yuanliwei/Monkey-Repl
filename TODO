@@ -1,0 +1,30 @@
+# find visible view
+let valid = (bounds) => {
+    let rect = bounds.match(/\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]/).slice(1).map(o => parseInt(o))
+    // console.log(rect);
+    return (rect[0] < 1080 - 5) && (rect[2] > 5) && (rect[2] - rect[0] > 5) && (rect[3] - rect[1] > 5)
+}
+
+let loop = (o) => {
+    o.childrens = o.childrens.filter(n =>{
+        if(!n.isVisibleToUser){
+            return false
+        }
+        let v = valid(n.bounds)
+        if(v){
+            return true
+        }
+        if(n.childrens.length>0){
+            return true
+        }
+        return false;
+    })
+    o.childrens.forEach(e => loop(e))
+}
+
+let mm = 50
+while(mm--){
+    loop(obj)
+}
+
+console.log(JSON.stringify(obj));
