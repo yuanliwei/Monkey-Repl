@@ -30,7 +30,7 @@ let findEditText = () => new Promise(async (resolve) => { let tree = await query
 
 async function start() {
     // await sleep(1000)
-    let tree = await query(`queryview gettree text`)
+    let tree = await query(`queryview gettree json`)
     console.log(tree);
     // let screenColor = await query(`takescreenshot getcolor 290 430`)
     // console.log('screenColor', screenColor);

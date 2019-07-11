@@ -8,39 +8,36 @@ let run = (command) => { shell.stdin.write(`${command}\n`) }
 let sleep = (timeout) => new Promise((resolve) => { setTimeout(() => { resolve() }, timeout) })
 let wait = () => new Promise((resolve) => { let unique = uuid(), chunks = []; shell.stdout.removeAllListeners('data'); shell.stdout.on('data', (chunk) => { chunks.push(chunk); if (chunk.includes(unique)) resolve(chunks.join('').replace(unique, '')) }); run(`echo ${unique}`) })
 let query = (command) => new Promise(async (resolve) => { await wait(); run(command); resolve((await wait()).replace(/OK:/g, '').trim()) })
-let getRectInLine = (line) => line.match(/bounds=\[(\d+),(\d+)\]\[(\d+),(\d+)\]/).slice(1).map(o => parseInt(o))
-let getRect = (name, tree) => getRectInLine(tree.split('\n').filter(o => o.includes(name))[0])
-let getRectVisible = (name, tree) => getRectInLine(tree.split('\n').filter(o => o.includes(name)).filter(o => getCenter(getRectInLine(o)).every(o => o > 2) )[0])
+let getRect = (bounds) => bounds.match(/\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]/).slice(1).map(o => parseInt(o))
+let filterVisible = (tree) => { let loop = (o, w, h, gap) => o.childrens = o.childrens.filter(n => { loop(n, w, h, gap); let r = getRect(n.bounds); return n.childrens.length > 0 || (r[0] < w - gap && r[1] < h - gap && r[2] > gap && r[3] > gap && r[2] - r[0] > gap && r[3] - r[1] > 5) }); let rect = getRect(tree.bounds); loop(tree, rect[2] - rect[0], rect[3] - rect[1], 5) }
 let getCenter = (rect) => [rect[0] + rect[2], rect[1] + rect[3]].map(o => parseInt(o / 2))
-let waitFor = (string) => new Promise(async (resolve) => { let matchLines = []; while (matchLines.length == 0) { let change = await query('getisviewchange'); if (change == 'true') { let tree = await query('queryview gettree text'); matchLines = tree.split('\n').filter(o => o.includes(string)); } else { await sleep(10) } } resolve() })
-let waitForVisible = (string) => new Promise(async (resolve) => { let matchLines = []; while (matchLines.length == 0) { let change = await query('getisviewchange'); if (change == 'true') { let tree = await query('queryview gettree text'); matchLines = tree.split('\n').filter(o => o.includes(string)); } else { await sleep(10) } } resolve() })
-let waitForColor = (color, x, y) => new Promise(async (resolve) => { let screenColor = ''; while (screenColor != color) { screenColor = await query(`takescreenshot getcolor ${x} ${y}`); await sleep(50) } resolve() })
 let clickCenter = (center) => run(`tap ${center.join(' ')}`)
 let clickRect = (rect) => clickCenter(getCenter(rect))
-let clickText = (text) => new Promise(async (resolve) => { await waitFor(text); let tree = await query('queryview gettree text'); clickRect(getRect(text, tree)); await wait(); resolve() })
-let clickTextWithTree = (text, tree) => new Promise(async (resolve) => { clickRect(getRect(text, tree)); await wait(); resolve() })
-let clickTextVisible = (text) => new Promise(async (resolve) => { await waitForVisible(text); let tree = await query('queryview gettree text'); clickRect(getRectVisible(text, tree)); await wait(); resolve() })
-let clickTextWithVisibleAndTree = (text, tree) => new Promise(async (resolve) => { clickRect(getRectVisible(text, tree)); await wait(); resolve() })
-let findEditText = () => new Promise(async (resolve) => { let tree = await query(`queryview gettree text`); let rects = tree.split('\n').filter(o => o.includes('class=android.widget.EditText')).map(o => getRectInLine(o)); resolve(rects) })
-let filterVisible = (tree, minGap)=>{
-    let arr = tree.split('\n')
-    let [x,y,w,h] = getRectInLine(arr[0])
-    arr.map(o=>getRectInLine(o)).map(o=>)
-    let a=[];
-    a.fore
-}
+let waitChange = () => new Promise(async (resolve) => { while ((await query('getisviewchange')) == 'false') sleep(10); resolve() })
+let waitFor = (string) => new Promise(async (resolve) => { while (true) { let tree = JSON.parse(await query('queryview gettree json')); filterVisible(tree); if (JSON.stringify(tree).includes(string)) { resolve(tree); break } await waitChange() } })
+let findInTree = (tree, match) => { let obj; let loop = (treeSub) => { if (match(treeSub)) obj = treeSub; else treeSub.childrens.forEach(loop); }; loop(tree); return obj }
+let clickAny = async (tree, match) => clickRect(getRect(findInTree(tree, match).bounds))
+let clickText = async (tree, text) => clickAny(tree, o => o.text && o.text.includes(text))
 
 async function start() {
     await sleep(100)
-    let location = await query('queryview getlocation')
-    console.log('getlocation : |', location, '|');
+    // let location = await query('queryview getlocation')
+    // console.log('getlocation : |', location, '|');
     // let screenshot = await query('takescreenshot scale 0.3')
     // screenshot = screenshot.replace(/[\r|\n]/g, '')
     // console.log('screenshot', 'data:image/jpeg;base64,' + screenshot);
-    while(true){
-        let s = await query('getisviewchange')
-        console.log(`query('queryview ischange = ')`,s);
-    }
+    // while(true){
+    //     let s = await query('getisviewchange')
+    //     console.log(`query('queryview ischange = ')`,s);
+    // }
+
+    let tree = await waitFor("话题")
+    await clickText(tree, '话题')
+    console.log('ok');
+    // let obj = findInTree(tree, o=>o.text&&o.text.includes('话题'))
+    // console.log(obj);
+
+
     run('quit')
 }
 
