@@ -1,5 +1,7 @@
 package android.app;
 
+import java.util.List;
+
 import android.content.ComponentName;
 import android.content.IIntentReceiver;
 import android.content.Intent;
@@ -27,6 +29,7 @@ public interface IActivityManager extends android.os.IInterface {
     }
 
     void setActivityController(IActivityController watcher, boolean imAMonkey);
+
     void setActivityController(IActivityController watcher);
 
     Intent registerReceiver(IApplicationThread caller, String callerPackage, IIntentReceiver receiver,
@@ -42,5 +45,12 @@ public interface IActivityManager extends android.os.IInterface {
 
     boolean startInstrumentation(ComponentName className, String profileFile, int flags, Bundle arguments,
             IInstrumentationWatcher watcher, IUiAutomationConnection connection, int userId, String abiOverride)
+            throws RemoteException;
+
+    List<ActivityManager.RunningTaskInfo> getTasks(int maxNum);
+
+    List<ActivityManager.RunningTaskInfo> getTasks(int maxNum, int flags);
+
+    public List<ActivityManager.RunningTaskInfo> getTasks(int maxNum, int flags, IThumbnailReceiver receiver)
             throws RemoteException;
 }

@@ -79,7 +79,9 @@ public class MonkeySourceShellViews {
             fromIndex = event.getFromIndex();
             toIndex = event.getToIndex();
             windowId = event.getWindowId();
-            packageName = event.getPackageName().toString();
+            if (event.getPackageName() != null) {
+                packageName = event.getPackageName().toString();
+            }
             sourceNodeId = event.getSourceNodeId();
         }
 
@@ -239,8 +241,8 @@ public class MonkeySourceShellViews {
             jsObj.put("deep", deep);
             jsObj.put("index", index);
             jsObj.put("text", node.getText());
-            jsObj.put("resource-id", node.getSourceNodeId());
-            jsObj.put("resource-id-name", node.getViewIdResourceName());
+            jsObj.put("resource_id", node.getSourceNodeId());
+            jsObj.put("resource_id_name", node.getViewIdResourceName());
             jsObj.put("bounds", bounds.toShortString());
             jsObj.put("class", node.getClassName());
             jsObj.put("inputType", node.getInputType());

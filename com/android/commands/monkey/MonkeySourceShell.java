@@ -29,7 +29,10 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
+import android.app.IActivityManager;
+import android.app.ActivityManager.RunningTaskInfo;
 import android.content.ClipData;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.IClipboard;
 import android.os.IPowerManager;
@@ -362,6 +365,34 @@ public class MonkeySourceShell implements MonkeyEventSource {
     }
 
     /**
+     * Command to get top activity class
+     */
+    private static class GetTopActivityCommand implements MonkeyCommand {
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            String className = "";
+            List<RunningTaskInfo> tasks = new ArrayList<>();
+            try {
+                tasks = mAm.getTasks(1);
+            } catch (Throwable e) {
+                try {
+                    tasks = mAm.getTasks(1, 0);
+                } catch (Throwable e1) {
+                    try {
+                        tasks = mAm.getTasks(1, 0, null);
+                    } catch (RemoteException e2) {
+                        e2.printStackTrace();
+                    }
+                }
+            }
+            if (tasks.size() > 0) {
+                ComponentName componentName = tasks.get(0).topActivity;
+                className = componentName.getPackageName() + "/" + componentName.getClassName();
+            }
+            return new MonkeyCommandReturn(true, className);
+        }
+    }
+
+    /**
      * Command to wake the device up
      */
     private static class WakeCommand implements MonkeyCommand {
@@ -510,6 +541,7 @@ public class MonkeySourceShell implements MonkeyEventSource {
         COMMAND_MAP.put("deferreturn", new DeferReturnCommand());
         COMMAND_MAP.put("takescreenshot", new MonkeySourceShellViews.TakeScreenshot());
         COMMAND_MAP.put("echo", new EchoCommand());
+        COMMAND_MAP.put("gettopactivity", new GetTopActivityCommand());
     }
 
     // QUIT command
@@ -590,8 +622,10 @@ public class MonkeySourceShell implements MonkeyEventSource {
 
     private BufferedReader input;
     private PrintWriter output;
+    private static IActivityManager mAm;
 
-    MonkeySourceShell() {
+    MonkeySourceShell(IActivityManager mAm) {
+        MonkeySourceShell.mAm = mAm;
         MonkeySourceShellViews.setup();
         // Wake the device up in preparation for doing some commands.
         wake();
@@ -732,7 +766,10 @@ public class MonkeySourceShell implements MonkeyEventSource {
                 // Translate the command line. This will handle returning error/ok to the user
                 long time = System.currentTimeMillis();
                 translateCommand(command);
-                Log.i(TAG, "translateCommand used time : " + String.format(Locale.getDefault(), "% 6d", System.currentTimeMillis() - time) + " , command : " + command);
+                Log.i(TAG,
+                        "translateCommand used time : "
+                                + String.format(Locale.getDefault(), "% 6d", System.currentTimeMillis() - time)
+                                + " , command : " + command);
             }
         } catch (Exception e) {
             e.printStackTrace();

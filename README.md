@@ -194,6 +194,8 @@ monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改�
     - `echo string`
 - 获取界面是否有更新
     - `getisviewchange`
+- 获取顶层 activity 
+    - `gettopactivity` > `OK:com.google.android.apps.nexuslauncher/com.google.android.apps.nexuslauncher.NexusLauncherActivity`
 - 退出
     - `quit`
 
