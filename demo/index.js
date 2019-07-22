@@ -9,7 +9,7 @@ let sleep = (timeout) => new Promise((resolve) => setTimeout(resolve, timeout))
 let wait = () => new Promise((resolve) => { let unique = uuid(), chunks = []; shell.stdout.removeAllListeners('data'); shell.stdout.on('data', (chunk) => { chunks.push(chunk); if (chunk.includes(unique)) resolve(chunks.join('').replace(unique, '')) }); run(`echo ${unique}`) })
 let query = (command) => new Promise(async (resolve) => { await wait(); run(command); resolve((await wait()).replace(/OK:/g, '').trim()) })
 let getRect = (bounds) => bounds.match(/\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]/).slice(1).map(o => parseInt(o))
-let filterVisible = (tree) => { let loop = (o, w, h, gap) => o.childrens = o.childrens.filter(n => { loop(n, w, h, gap); let r = getRect(n.bounds); return n.childrens.length > 0 || (r[0] < w - gap && r[1] < h - gap && r[2] > gap && r[3] > gap && r[2] - r[0] > gap && r[3] - r[1] > 5) }); let rect = getRect(tree.bounds); loop(tree, rect[2] - rect[0], rect[3] - rect[1], 5); return tree }
+let filterVisible = (tree) => { let loop = (o, w, h, gap) => o.childrens = o.childrens.filter(n => { loop(n, w, h, gap); let r = getRect(n.bounds); return n.childrens.length > 0 || (r[0] < w - gap && r[1] < h - gap && r[2] > gap && r[3] > gap && r[2] - r[0] > gap && r[3] - r[1] > 5) }); let rect = getRect(tree.bounds); loop(tree, rect[2], rect[3], 5); return tree }
 let getCenter = (rect) => [rect[0] + rect[2], rect[1] + rect[3]].map(o => parseInt(o / 2))
 let clickCenter = (center) => run(`tap ${center.join(' ')}`)
 let clickRect = (rect) => clickCenter(getCenter(rect))
