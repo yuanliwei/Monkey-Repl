@@ -16,7 +16,7 @@ let clickRect = (rect) => clickCenter(getCenter(rect))
 let waitChange = () => new Promise(async (resolve) => { while ((await query('getisviewchange')) == 'false') sleep(10); resolve() })
 let getVisibleTree = async () => filterVisible(JSON.parse(await query('queryview gettree json')))
 let waitTreeFor = (string) => new Promise(async (resolve) => { while (true) { let tree = await getVisibleTree(); if (JSON.stringify(tree).includes(string)) { resolve(tree); break } await waitChange() } })
-let findInTree = (tree, match) => { let obj; let loop = (child) => { if (match(child)) obj = child; else child.childrens.forEach(loop) }; loop(tree); return obj }
+let findInTree = (tree, match) => { let obj; let loop = (child) => { if (!obj && match(child)) obj = child; else child.childrens.forEach(loop) }; loop(tree); return obj }
 let clickAny = async (tree, match) => clickRect(getRect(findInTree(tree, match).bounds))
 let clickText = async (tree, text) => clickAny(tree, o => o.text && o.text.includes(text))
 let clickId = async (tree, resourceId) => clickAny(tree, o => o.resource_id_name == resourceId)
