@@ -355,6 +355,53 @@ public class MonkeySourceShell implements MonkeyEventSource {
     }
 
     /**
+     * Command slide from point to point on time with step
+     */
+    private static class SlideCommand implements MonkeyCommand {
+        // slide x1 y1 x2 y2 time step
+        // slide 300 500 600 700 20 16
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+
+            try {
+                int x1, y1, x2, y2, time, step;
+                System.out.println("command size : " + command.size());
+                if (command.size() != 7) {
+                    return EARG;
+                }
+                int i = 1;
+                x1 = Integer.parseInt(command.get(i++));
+                y1 = Integer.parseInt(command.get(i++));
+                x2 = Integer.parseInt(command.get(i++));
+                y2 = Integer.parseInt(command.get(i++));
+                time = Integer.parseInt(command.get(i++));
+                step = Integer.parseInt(command.get(i++));
+
+                int sleep = time / step;
+                if (sleep == 0) {
+                    sleep = 1;
+                }
+                int xRange = (x2 - x1) / step;
+                int yRange = (y2 - y1) / step;
+
+                i = 0;
+                queue.enqueueEvent(new MonkeyTouchEvent(MotionEvent.ACTION_DOWN).addPointer(0, x1, y1));
+                queue.enqueueEvent(new MonkeyThrottleEvent(sleep));
+                while (i++ < step) {
+                    queue.enqueueEvent(new MonkeyTouchEvent(MotionEvent.ACTION_MOVE).addPointer(0,
+                            (int) (x1 + i * xRange), (int) (y1 + i * yRange)));
+                    queue.enqueueEvent(new MonkeyThrottleEvent(sleep));
+                }
+                queue.enqueueEvent(new MonkeyTouchEvent(MotionEvent.ACTION_UP).addPointer(0, x2, y2));
+
+                return OK;
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new MonkeyCommandReturn(false, e.getMessage());
+            }
+        }
+    }
+
+    /**
      * Command to echo a string
      */
     private static class EchoCommand implements MonkeyCommand {
@@ -532,6 +579,7 @@ public class MonkeySourceShell implements MonkeyEventSource {
         COMMAND_MAP.put("press", new PressCommand());
         COMMAND_MAP.put("type", new TypeCommand());
         COMMAND_MAP.put("copy", new CopyCommand());
+        COMMAND_MAP.put("slide", new SlideCommand());
         COMMAND_MAP.put("listvar", new MonkeySourceShellVars.ListVarCommand());
         COMMAND_MAP.put("getvar", new MonkeySourceShellVars.GetVarCommand());
         COMMAND_MAP.put("queryview", new MonkeySourceShellViews.QueryViewCommand());

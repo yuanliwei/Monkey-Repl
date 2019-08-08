@@ -31,6 +31,7 @@ monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改�
     - 按下
     - 移动 
     - 抬起
+    - 从一点滑动到另一点
 - 休眠指定时间 
 - 输入字符串文本
 - 复制文本到剪贴板
@@ -94,6 +95,9 @@ monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改�
     - 抬起
         - `touch up x y`
         - `touch up 70 80`
+    - 从一点滑动到另一点
+        - `slide x1 y1 x2 y2 time step`
+        - `slide 300 500 600 700 20 16`
 - 休眠指定时间 
     - `sleep 1024`
 - 输入字符串文本
