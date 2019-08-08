@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>TTS 测试</title>
+</head>
+
+<body>
+    <audio id="audio" controls autoplay></audio>
+
+    <button onclick="start()">PLAY</button>
+
+
+    <script>
+        let s = `一、若不曾遇见你，我或许还是那个平凡的我，看云是云，看雨是雨，因为遇见了你，目光所及之处都是你，一切颜色都有了温度。一路经历坎坷，每当我想起你的时候，总会嘴角微笑上扬，如果我不曾爱过你，也不会像现在这样寂寞。
+
+二、爱恨两难，情难舍，身不由已在天涯，三生有幸，陪过你一程。你给我一场美梦，曲终人散，而我却还不肯醒来。执笔，风雪来，寒入骨，你的决定我无法改变，我只是为难我自己。
+
+
+三、故事一再写意，仍不肯写下那最悲离的结局。红尘笑我太痴情，我笑世人不懂情，一个情字，在心间缠绕了几个轮回，落于凉夜，化为心间的殇。某一天停下来，才发现我们心疼过很多人，却从未心疼过自己。
+
+
+四、曾经的我们多么天真，如今，只剩下历经艰辛过的沧桑，你的世界我来过，就已经足够，不敢再奢求太多，有一种爱叫做放手，其实并不是真的放下，明明在内心深处还牵挂着你，却只能心痛地望着你所在的远方，说声再见。
+
+
+五、爱情里，我们都曾是最好的自己，爱情里，我们都曾受伤，愿在不久的将来，我们都将是幸福的。曾经的错过，在心间凝聚成无与伦比的美好，人生若只如初见，我只想一生呆在你身边，人生若只如初见，我愿是一粒种子，落在你必经的路口，在你不经意间长成一颗树，为你开花，为你遮风挡雨。
+
+
+六、人生若只如初见，愿时间定格，那样我就可以爱你很久很久。相爱时两个人可以依偎着取暖，分别后，海角天涯，冷暖自知。你说过的幸福模样，还一直在我心底珍藏，这些年，走过无数苍凉，我再也没有看到过幸福。也许幸福只是一个传说，也许岁月静好，只是你随口说说，我说我记得从前的你，而现在的你，只有一幅令我陌生的样子。最理想的婚姻大概是我在闹，他在笑。
+
+
+七、最初喜欢于样貌，然后却沉溺于才情，最后折服在于三观。我崇拜他像个英雄，他宠爱我像个孩子。 路再长也会有终点，夜再长也会有尽头，不管雨下得有多大，总会有停止的时候。乌云永远遮不住微笑的太阳，鲸鱼搅不浑湛蓝的大海，迷雾压不倒巍峨的高山，雷声叫不倒矗立的山岗，扇子驱不散漫天的大雾。
+
+
+八、鹿的脖子再长，总高不过它的脑袋；人的脚趾再长，也长不过他的脚板。 当你什么工作皆不想做，或人生每一桩事皆有极大的不情愿，在这时刻，你最好去流浪。
+
+
+九、去千山万水的熬时度日，耗空你的身心，粗砺你的知觉，直到你能自发、甘愿的回抵原先枯燥的岗位，做你身前之事。坏情绪也不要都说给别人听，不管怎么样，夜晚你就睡觉吧，白天你就出去散散心，阴天你就吃好喝好，雨天你就听听雨。
+
+`
+
+        let sentences = []
+        function start() {
+            sentences = s.split('\n').map(o => o.split('。')).flat().filter(o => o.trim())
+            console.log(sentences);
+            next()
+        }
+
+        function next() {
+            let audio = document.querySelector('audio')
+            let sentence = sentences.shift()
+            if (!sentence) {
+                console.log('over!');
+                return
+            }
+            console.log(sentence);
+
+            audio.src = `https://fanyi.baidu.com/gettts?lan=zh&text=${encodeURI(sentence)}&spd=5`
+            audio.onended = () => {
+                next()
+            }
+            audio.onerror = () => {
+                sentences.unshift(sentence)
+                next()
+            }
+        }
+
+
+    </script>
+</body>
+
+</html>

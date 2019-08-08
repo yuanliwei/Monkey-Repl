@@ -29,12 +29,14 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.StringTokenizer;
 
-import android.app.IActivityManager;
 import android.app.ActivityManager.RunningTaskInfo;
+import android.app.IActivityManager;
 import android.content.ClipData;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.IClipboard;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.os.IPowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
@@ -440,6 +442,50 @@ public class MonkeySourceShell implements MonkeyEventSource {
     }
 
     /**
+     * Command to play audio
+     */
+    private static class PlayAudioCommand implements MonkeyCommand {
+
+        MediaPlayer player = null;
+
+        // play /mnt/sdcard/tts.mp3
+
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            int duration = 0;
+            try {
+                if (player != null) {
+                    player.reset();
+                    player.release();
+                }
+                player = new MediaPlayer();
+                String audio = command.get(1);
+                player.setAudioStreamType(AudioManager.STREAM_MUSIC);
+                player.setDataSource(audio);
+                player.prepare();
+                player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+                    @Override
+                    public void onCompletion(MediaPlayer mp) {
+                        System.out.println("player onCompletion!");
+                    }
+                });
+                player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
+                    @Override
+                    public boolean onError(MediaPlayer mp, int what, int extra) {
+                        System.err.println("MediaPlayer ERROR : what:" + what + " extra:" + extra + "");
+                        return false;
+                    }
+                });
+                player.start();
+                duration = player.getDuration();
+            } catch (Exception e) {
+                e.printStackTrace();
+                return EARG;
+            }
+            return new MonkeyCommandReturn(true, String.valueOf(duration));
+        }
+    }
+
+    /**
      * Command to wake the device up
      */
     private static class WakeCommand implements MonkeyCommand {
@@ -590,6 +636,7 @@ public class MonkeySourceShell implements MonkeyEventSource {
         COMMAND_MAP.put("takescreenshot", new MonkeySourceShellViews.TakeScreenshot());
         COMMAND_MAP.put("echo", new EchoCommand());
         COMMAND_MAP.put("gettopactivity", new GetTopActivityCommand());
+        COMMAND_MAP.put("play", new PlayAudioCommand());
     }
 
     // QUIT command
@@ -648,7 +695,7 @@ public class MonkeySourceShell implements MonkeyEventSource {
 
         /**
          * Wait until the given event has occurred before returning the value.
-         * 
+         *
          * @return The MonkeyCommandReturn from the command that was deferred.
          */
         public MonkeyCommandReturn waitForEvent() {

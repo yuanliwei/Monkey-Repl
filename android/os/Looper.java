@@ -15,4 +15,11 @@ public final class Looper {
         throw new RuntimeException("Stub!");
     }
 
+    public static void prepare() {
+    }
+
+    public static void loop() {
+
+    }
+
 }

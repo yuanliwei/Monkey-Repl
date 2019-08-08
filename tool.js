@@ -52,7 +52,7 @@ function updateSourceList() {
     fs.writeFileSync('D:/gitPro/monkey-v2/source_list', files.join('\n'))
 }
 
-let filename = 'D:/node/Monkey-Repl/android/app/ActivityThread.java'
+let filename = 'E:/node/Monkey-Repl/android/speech/tts/TextToSpeech.java'
 let dir = 'D:/gitPro/monkey-v2/android'
 
 // loopDirFiles(dir).forEach(file => handleFileContent(file))
