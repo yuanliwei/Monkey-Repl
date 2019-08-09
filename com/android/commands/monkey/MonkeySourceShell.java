@@ -454,13 +454,22 @@ public class MonkeySourceShell implements MonkeyEventSource {
             int duration = 0;
             try {
                 if (player != null) {
-                    player.reset();
-                    player.release();
+                    try {
+                        player.reset();
+                        player.release();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    player = null;
                 }
                 player = new MediaPlayer();
                 String audio = command.get(1);
                 player.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                player.setDataSource(audio);
+                try {
+                    player.setDataSource(audio);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
                 player.prepare();
                 player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
