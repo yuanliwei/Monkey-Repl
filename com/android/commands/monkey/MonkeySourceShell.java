@@ -850,6 +850,10 @@ public class MonkeySourceShell implements MonkeyEventSource {
 
                 String command = input.readLine();
 
+                if (command == null) {
+                    continue;
+                }
+
                 // Do quit checking here
                 if (QUIT.equals(command)) {
                     // then we're done
