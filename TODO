@@ -1,35 +1,24 @@
-# find visible view
-let valid = (bounds) => {
-    let rect = bounds.match(/\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]/).slice(1).map(o => parseInt(o))
-    // console.log(rect);
-    return (rect[0] < 1080 - 5) && (rect[2] > 5) && (rect[2] - rect[0] > 5) && (rect[3] - rect[1] > 5)
-}
+ <      关于手机
+ 型号                 vivo Y66
 
-let loop = (o) => {
-    o.childrens = o.childrens.filter(n => {
-        if (!n.isVisibleToUser) {
-            return false
-        }
-        let v = valid(n.bounds)
-        if (v) {
-            return true
-        }
-        if (n.childrens.length > 0) {
-            return true
-        }
-        return false;
-    })
-    o.childrens.forEach(e => loop(e))
-}
+ IMEI 1             866842034031458
 
-let mm = 50
-while (mm--) {
-    loop(obj)
-}
+ IMEI 2            866842034031441
 
-console.log(JSON.stringify(obj));
+ MEID              A0000079331A29
+ CMIIT ID               2016CP6709
+ Android版本                6.0.1
+ Android安全补丁程序级别    2018-05-01
+ 处理器      1. 4GHz高通骁龙八核MSM8937
+ CPU实时数据
+ 运行内存                 3G
+ vivo ROM            FuntouchOS_ 3.0
 
+ 软件H版木号              PN1621A1125
 
-let getRect = (bounds) => bounds.match(/\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]/).slice(1).map(o => parseInt(o))
-let filterVisible = (tree) => { let loop = (o, w, h, gap) => o.childrens = o.childrens.filter(n => { loop(n, w, h, gap); let r = getRect(n.bounds); return n.childrens > 0 || (r[0] < w - gap && r[1] < h - gap && r[2] > gap && r[3] > gap && r[2] - r[0] > gap && r[3] - r[1] > 5) }); let rect = getRect(tree.bounds); loop(tree, rect[2] - rect[0], rect[3] - rect[1], 5) }
-
+09-05 10:55:09.281 9464-9464/? E/AndroidRuntime: *** FATAL EXCEPTION IN SYSTEM PROCESS: main
+    java.lang.NoSuchMethodError: No interface method setActivityController(Landroid/app/IActivityController;Z)V in class Landroid/app/IActivityManager; or its super classes (declaration of 'android.app.IActivityManager' appears in /system/framework/framework.jar)
+        at com.android.commands.monkey.Monkey.run(Monkey.java:139)
+        at com.android.commands.monkey.Monkey.main(Monkey.java:112)
+        at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
+        at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:251)
