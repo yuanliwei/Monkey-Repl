@@ -38,6 +38,7 @@ import android.content.IClipboard;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
 import android.os.IPowerManager;
+import android.os.PowerManager;
 import android.os.RemoteException;
 import android.os.ServiceManager;
 import android.os.SystemClock;
@@ -608,7 +609,11 @@ public class MonkeySourceShell implements MonkeyEventSource {
         IPowerManager pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE));
         try {
             try {
-                pm.wakeUp(SystemClock.uptimeMillis(), "Monkey", null);
+                try {
+                    pm.wakeUp(SystemClock.uptimeMillis(), PowerManager.WAKE_REASON_UNKNOWN, "Monkey", null);
+                } catch (NoSuchMethodError e) {
+                    pm.wakeUp(SystemClock.uptimeMillis(), "Monkey", null);
+                }
             } catch (NoSuchMethodError error) {
                 pm.wakeUp(SystemClock.uptimeMillis());
             }
