@@ -649,6 +649,8 @@ public abstract class Context {
         return this;
     }
 
+    public abstract String getPackageName();
+
     public abstract Context createApplicationContext(ApplicationInfo application, @CreatePackageOptions int flags)
             throws PackageManager.NameNotFoundException;
 

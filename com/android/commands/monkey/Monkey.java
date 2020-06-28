@@ -18,11 +18,14 @@ package com.android.commands.monkey;
 
 import android.app.ActivityManager;
 import android.app.ActivityManagerNative;
+import android.app.ActivityThread;
+import android.app.Application;
 import android.app.IActivityController;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.IPackageManager;
+import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Process;
 import android.os.ServiceManager;

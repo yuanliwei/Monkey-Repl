@@ -194,6 +194,11 @@ public class ContextWrapper extends Context {
     public void revokeUriPermission(Uri uri, int modeFlags) {
         throw new RuntimeException("Stub!");
     }
+    
+    @Override
+    public String getPackageName() {
+        throw new RuntimeException("Stub!");
+    }
 
     @Override
     public void revokeUriPermission(String targetPackage, Uri uri, int modeFlags) {
