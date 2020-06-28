@@ -361,6 +361,11 @@ class ContextImpl extends Context {
     public Context createPackageContext(String packageName, int flags) throws NameNotFoundException {
         return null;
     }
+    
+    @Override
+    public String getPackageName() {
+        return null;
+    }
 
     @Override
     public Context createApplicationContext(ApplicationInfo application, int flags) throws NameNotFoundException {
