@@ -151,8 +151,10 @@ public class MonkeySourceShell implements MonkeyEventSource {
 
                 // figure out the action
                 int action = -1;
+                long downTime = 0;
                 if ("down".equals(actionName)) {
                     action = MotionEvent.ACTION_DOWN;
+                    downTime = SystemClock.uptimeMillis();
                 } else if ("up".equals(actionName)) {
                     action = MotionEvent.ACTION_UP;
                 } else if ("move".equals(actionName)) {
@@ -163,7 +165,11 @@ public class MonkeySourceShell implements MonkeyEventSource {
                     return EARG;
                 }
 
-                queue.enqueueEvent(new MonkeyTouchEvent(action).addPointer(0, x, y));
+                if (downTime > 0) {
+                    queue.enqueueEvent(new MonkeyTouchEvent(action).addPointer(0, x, y).setDownTime(downTime));
+                } else {
+                    queue.enqueueEvent(new MonkeyTouchEvent(action).addPointer(0, x, y));
+                }
                 return OK;
             }
             return EARG;
@@ -525,8 +531,12 @@ public class MonkeySourceShell implements MonkeyEventSource {
                     Log.e(TAG, "Got something that wasn't a number", e);
                     return EARG;
                 }
-                queue.enqueueEvent(new MonkeyTouchEvent(MotionEvent.ACTION_DOWN).addPointer(0, x, y));
-                queue.enqueueEvent(new MonkeyTouchEvent(MotionEvent.ACTION_UP).addPointer(0, x, y));
+                long downTime = SystemClock.uptimeMillis();
+                queue.enqueueEvent(
+                        new MonkeyTouchEvent(MotionEvent.ACTION_DOWN).addPointer(0, x, y).setDownTime(downTime));
+                queue.enqueueEvent(new MonkeyThrottleEvent(100));
+                queue.enqueueEvent(
+                        new MonkeyTouchEvent(MotionEvent.ACTION_UP).addPointer(0, x, y).setDownTime(downTime));
                 return OK;
             }
             return EARG;
@@ -714,14 +724,14 @@ public class MonkeySourceShell implements MonkeyEventSource {
          */
         public MonkeyCommandReturn waitForEvent() {
             switch (event) {
-            case ON_WINDOW_STATE_CHANGE:
-                try {
-                    synchronized (MonkeySourceShellViews.class) {
-                        MonkeySourceShellViews.class.wait(timeout);
+                case ON_WINDOW_STATE_CHANGE:
+                    try {
+                        synchronized (MonkeySourceShellViews.class) {
+                            MonkeySourceShellViews.class.wait(timeout);
+                        }
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "Deferral interrupted: " + e.getMessage());
                     }
-                } catch (InterruptedException e) {
-                    Log.d(TAG, "Deferral interrupted: " + e.getMessage());
-                }
             }
             return deferredReturn;
         }
