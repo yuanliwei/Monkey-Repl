@@ -18,14 +18,11 @@ package com.android.commands.monkey;
 
 import android.app.ActivityManager;
 import android.app.ActivityManagerNative;
-import android.app.ActivityThread;
-import android.app.Application;
 import android.app.IActivityController;
 import android.app.IActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.IPackageManager;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Process;
 import android.os.ServiceManager;
@@ -111,8 +108,8 @@ public class Monkey {
 
     public static void main(String[] args) {
         // Set the process name showing in "ps" or "top"
-        Process.setArgV0("com.android.commands.monkey");
-        int resultCode = (new Monkey()).run(args);
+        Process.setArgV0("com.android.commands.monkey-repl");
+        int resultCode = new Monkey().run(args);
         System.exit(resultCode);
     }
 
@@ -139,7 +136,11 @@ public class Monkey {
             new MonkeyRotationEvent(Surface.ROTATION_0, false).injectEvent(mWm, mAm, 0);
         }
 
-        mAm.setActivityController(null, true);
+        try {
+            mAm.setActivityController(null, false);
+        } catch (Throwable e) {
+            mAm.setActivityController(null);
+        }
 
         return 0;
     }
@@ -175,7 +176,7 @@ public class Monkey {
         }
 
         try {
-            mAm.setActivityController(new ActivityController(), true);
+            mAm.setActivityController(new ActivityController(), false);
         } catch (Throwable e) {
             mAm.setActivityController(new ActivityController());
         }
