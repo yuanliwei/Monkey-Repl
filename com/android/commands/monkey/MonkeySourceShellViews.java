@@ -61,28 +61,12 @@ public class MonkeySourceShellViews {
     private static UiAutomationConnection mUiAutomationConnection;
 
     private static boolean hasStateChange = true;
-    private static int itemCount = -1;
-    private static int currentItemIndex = -1;
-    private static int fromIndex = -1;
-    private static int toIndex = -1;
-    private static int windowId = -1;
-    private static String packageName = "";
-    private static long sourceNodeId = -1;
 
     private static OnAccessibilityEventListener listener = new OnAccessibilityEventListener() {
 
         @Override
         public void onAccessibilityEvent(AccessibilityEvent event) {
             hasStateChange = true;
-            itemCount = event.getItemCount();
-            currentItemIndex = event.getCurrentItemIndex();
-            fromIndex = event.getFromIndex();
-            toIndex = event.getToIndex();
-            windowId = event.getWindowId();
-            if (event.getPackageName() != null) {
-                packageName = event.getPackageName().toString();
-            }
-            sourceNodeId = event.getSourceNodeId();
         }
 
     };
