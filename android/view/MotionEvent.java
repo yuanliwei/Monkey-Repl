@@ -5,7 +5,7 @@ import android.graphics.Matrix;
 import android.os.Parcel;
 import android.os.Parcelable;
 
-public final class MotionEvent extends InputEvent implements Parcelable {
+public final class MotionEvent extends InputEvent {
     public static final int INVALID_POINTER_ID = -1;
     public static final int ACTION_MASK = 0xff;
     public static final int ACTION_DOWN = 0;
@@ -650,10 +650,6 @@ public final class MotionEvent extends InputEvent implements Parcelable {
 
         @Override
         public boolean equals(Object other) {
-            throw new RuntimeException("Stub!");
-        }
-
-        private boolean equals(PointerProperties other) {
             throw new RuntimeException("Stub!");
         }
 

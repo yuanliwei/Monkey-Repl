@@ -1,6 +1,7 @@
 package android.content.pm;
 
 import android.content.Intent;
+import android.os.Parcelable;
 import android.os.RemoteException;
 
 public interface IPackageManager extends android.os.IInterface {
@@ -23,11 +24,11 @@ public interface IPackageManager extends android.os.IInterface {
 
     public ResolveInfo resolveIntent(Intent intent, String type, int i, int myUserId);
 
-    ParceledListSlice queryIntentActivities(Intent intent, String resolvedType, int flags, int userId);
+    ParceledListSlice<Parcelable> queryIntentActivities(Intent intent, String resolvedType, int flags, int userId);
 
     public int getPermissionFlags(String name, String pkg, int myUserId);
 
-    public ParceledListSlice getInstalledPackages(int flags, int userId);
+    public ParceledListSlice<Parcelable> getInstalledPackages(int flags, int userId);
 
     public PermissionInfo getPermissionInfo(String perm, String string, int i);
 

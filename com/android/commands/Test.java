@@ -28,6 +28,6 @@ public class Test {
         byte[] e = certificate.getEncoded();
         MessageDigest digest = MessageDigest.getInstance("MD5");
         byte[] o = digest.digest(e);
-
+        System.out.println(o);
     }
 }

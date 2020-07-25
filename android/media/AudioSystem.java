@@ -63,19 +63,12 @@ public class AudioSystem {
         }
     }
 
-    @Deprecated
     public static final int ROUTE_EARPIECE = (1 << 0);
-    @Deprecated
     public static final int ROUTE_SPEAKER = (1 << 1);
-    @Deprecated
     public static final int ROUTE_BLUETOOTH = (1 << 2);
-    @Deprecated
     public static final int ROUTE_BLUETOOTH_SCO = (1 << 2);
-    @Deprecated
     public static final int ROUTE_HEADSET = (1 << 3);
-    @Deprecated
     public static final int ROUTE_BLUETOOTH_A2DP = (1 << 4);
-    @Deprecated
     public static final int ROUTE_ALL = 0xFFFFFFFF;
 
     public static final int AUDIO_SESSION_ALLOCATE = 0;

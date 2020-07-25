@@ -65,7 +65,6 @@ public class PackageInfo implements Parcelable {
 
     public static final int REQUESTED_PERMISSION_GRANTED = 1 << 1;
 
-    @Deprecated
     public Signature[] signatures;
 
     public SigningInfo signingInfo;

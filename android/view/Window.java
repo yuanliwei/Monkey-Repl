@@ -21,7 +21,6 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.view.accessibility.AccessibilityEvent;
-import javafx.scene.Scene;
 
 public abstract class Window {
     public static final int FEATURE_OPTIONS_PANEL = 0;
@@ -558,10 +557,6 @@ public abstract class Window {
     }
 
     public void injectInputEvent(InputEvent event) {
-        throw new RuntimeException("Stub!");
-    }
-
-    public Scene getContentScene() {
         throw new RuntimeException("Stub!");
     }
 

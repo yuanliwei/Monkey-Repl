@@ -2,9 +2,8 @@
 package android.view;
 
 import android.os.Parcel;
-import android.os.Parcelable;
 
-public class KeyEvent extends InputEvent implements Parcelable {
+public class KeyEvent extends InputEvent {
     public static final int KEYCODE_UNKNOWN = 0;
     public static final int KEYCODE_SOFT_LEFT = 1;
     public static final int KEYCODE_SOFT_RIGHT = 2;
