@@ -7,7 +7,7 @@ public class JSONArray {
         throw new RuntimeException("Stub!");
     }
 
-    public JSONArray(Collection copyFrom) {
+    public JSONArray(Collection<?> copyFrom) {
         throw new RuntimeException("Stub!");
     }
 

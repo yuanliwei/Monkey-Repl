@@ -20,6 +20,9 @@ package android.util;
  * Base class for all unchecked exceptions thrown by the Android frameworks.
  */
 public class AndroidRuntimeException extends RuntimeException {
+
+    private static final long serialVersionUID = 7225484603790453364L;
+
     public AndroidRuntimeException() {
     }
 

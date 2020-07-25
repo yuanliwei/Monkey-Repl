@@ -4,7 +4,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-public final class ArraySet<E> implements Collection<E>, Set<E> {
+public final class ArraySet<E> implements Set<E> {
     static Object[] sBaseCache;
     static int sBaseCacheSize;
     static Object[] sTwiceBaseCache;

@@ -10,7 +10,7 @@ public class JSONObject {
         throw new RuntimeException("Stub!");
     }
 
-    public JSONObject(Map copyFrom) {
+    public JSONObject(Map<?, ?> copyFrom) {
         throw new RuntimeException("Stub!");
     }
 

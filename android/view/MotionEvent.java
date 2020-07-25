@@ -118,7 +118,6 @@ public final class MotionEvent extends InputEvent {
         throw new RuntimeException("Stub!");
     }
 
-    @Deprecated
     static public MotionEvent obtain(long downTime, long eventTime, int action, int pointerCount, int[] pointerIds,
             PointerCoords[] pointerCoords, int metaState, float xPrecision, float yPrecision, int deviceId,
             int edgeFlags, int source, int flags) {

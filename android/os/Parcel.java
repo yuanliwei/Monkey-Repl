@@ -115,11 +115,11 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public final void setClassCookie(Class clz, Object cookie) {
+    public final void setClassCookie(Class<?> clz, Object cookie) {
         throw new RuntimeException("Stub!");
     }
 
-    public final Object getClassCookie(Class clz) {
+    public final Object getClassCookie(Class<?> clz) {
         throw new RuntimeException("Stub!");
     }
 
@@ -127,11 +127,11 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public Map<Class, Object> copyClassCookies() {
+    public Map<Class<?>, Object> copyClassCookies() {
         throw new RuntimeException("Stub!");
     }
 
-    public void putClassCookies(Map<Class, Object> cookies) {
+    public void putClassCookies(Map<Class<?>, Object> cookies) {
         throw new RuntimeException("Stub!");
     }
 
@@ -223,7 +223,7 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public final void writeMap(Map val) {
+    public final void writeMap(Map<?, ?> val) {
         throw new RuntimeException("Stub!");
     }
 
@@ -239,7 +239,7 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public final void writeList(List val) {
+    public final void writeList(List<?> val) {
         throw new RuntimeException("Stub!");
     }
 
@@ -491,15 +491,15 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public final void readMap(Map outVal, ClassLoader loader) {
+    public final void readMap(Map<?, ?> outVal, ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 
-    public final void readList(List outVal, ClassLoader loader) {
+    public final void readList(List<?> outVal, ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 
-    public final HashMap readHashMap(ClassLoader loader) {
+    public final HashMap<?, ?> readHashMap(ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 
@@ -535,7 +535,7 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public final ArrayList readArrayList(ClassLoader loader) {
+    public final ArrayList<?> readArrayList(ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 
@@ -543,7 +543,7 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public final SparseArray readSparseArray(ClassLoader loader) {
+    public final SparseArray<?> readSparseArray(ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 
@@ -665,7 +665,7 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    public void readArrayMap(ArrayMap outVal, ClassLoader loader) {
+    public void readArrayMap(ArrayMap<?, ?> outVal, ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 
@@ -673,7 +673,7 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    private void readListInternal(List outVal, int N, ClassLoader loader) {
+    private void readListInternal(List<?> outVal, int N, ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 
@@ -681,7 +681,7 @@ public final class Parcel {
         throw new RuntimeException("Stub!");
     }
 
-    private void readSparseArrayInternal(SparseArray outVal, int N, ClassLoader loader) {
+    private void readSparseArrayInternal(SparseArray<?> outVal, int N, ClassLoader loader) {
         throw new RuntimeException("Stub!");
     }
 

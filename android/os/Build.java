@@ -11,19 +11,15 @@ public class Build {
     public static final String PRODUCT = getString("ro.product.name");
     public static final String DEVICE = getString("ro.product.device");
     public static final String BOARD = getString("ro.product.board");
-    @Deprecated
     public static final String CPU_ABI = null;
-    @Deprecated
     public static final String CPU_ABI2 = null;
     public static final String MANUFACTURER = getString("ro.product.manufacturer");
     public static final String BRAND = getString("ro.product.brand");
     public static final String MODEL = getString("ro.product.model");
     public static final String BOOTLOADER = getString("ro.bootloader");
-    @Deprecated
     public static final String RADIO = "getString(TelephonyProperties.PROPERTY_BASEBAND_VERSION)";
     public static final String HARDWARE = getString("ro.hardware");
     public static final boolean IS_EMULATOR = getString("ro.kernel.qemu").equals("1");
-    @Deprecated
     // IMPORTANT: This field should be initialized via a function call to
     // prevent its value being inlined in the app during compilation because
     // we will later set it to the value based on the app's target SDK.
