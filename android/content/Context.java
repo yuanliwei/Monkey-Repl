@@ -534,7 +534,6 @@ public abstract class Context {
     @SystemApi
     public static final String STATS_MANAGER = "stats";
 
-    // TODO: Expose API when the implementation is more complete.
     // @SystemApi
     public static final String BUGREPORT_SERVICE = "bugreport";
 
@@ -707,7 +706,7 @@ public abstract class Context {
     }
 
     @TestApi
-    public void setAutofillCompatibilityEnabled(@SuppressWarnings("unused") boolean autofillCompatEnabled) {
+    public void setAutofillCompatibilityEnabled(boolean autofillCompatEnabled) {
         throw new RuntimeException("Stub!");
     }
 
