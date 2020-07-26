@@ -108,7 +108,7 @@ public class Monkey {
 
     public static void main(String[] args) {
         // Set the process name showing in "ps" or "top"
-        Process.setArgV0("com.android.commands.monkey-repl");
+        Process.setArgV0("monkey-repl");
         int resultCode = new Monkey().run(args);
         System.exit(resultCode);
     }
