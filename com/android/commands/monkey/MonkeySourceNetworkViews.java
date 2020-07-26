@@ -16,7 +16,7 @@
 
 package com.android.commands.monkey;
 
-import static com.android.commands.monkey.MonkeySourceShell.EARG;
+import static com.android.commands.monkey.MonkeySourceNetwork.EARG;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.android.commands.monkey.MonkeySourceShell.CommandQueue;
-import com.android.commands.monkey.MonkeySourceShell.MonkeyCommand;
-import com.android.commands.monkey.MonkeySourceShell.MonkeyCommandReturn;
+import com.android.commands.monkey.MonkeySourceNetwork.CommandQueue;
+import com.android.commands.monkey.MonkeySourceNetwork.MonkeyCommand;
+import com.android.commands.monkey.MonkeySourceNetwork.MonkeyCommandReturn;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +54,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
  * Utility class that enables Monkey to perform view introspection when issued
  * Monkey Network Script commands over the network.
  */
-public class MonkeySourceShellViews {
+public class MonkeySourceNetworkViews {
 
     protected static UiAutomation sUiTestAutomationBridge;
 

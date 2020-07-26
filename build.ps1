@@ -10,5 +10,7 @@ pause
 rm monkey_repl.jar
 rm java_build.jar
 rm classes.dex
-adb shell "export CLASSPATH=/data/local/tmp/monkey_repl.jar && exec app_process /system/bin com.android.commands.monkey.Monkey"
+# adb shell "export CLASSPATH=/data/local/tmp/monkey_repl.jar && exec app_process /system/bin com.android.commands.monkey.Monkey"
+adb shell "export CLASSPATH=/data/local/tmp/monkey_repl.jar && exec nohup app_process /system/bin com.android.commands.monkey.Monkey"
 
+# adb shell ps | grep monkey

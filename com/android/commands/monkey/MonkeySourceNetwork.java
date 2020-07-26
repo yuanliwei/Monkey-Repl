@@ -16,9 +16,11 @@
 package com.android.commands.monkey;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,7 +53,7 @@ import android.view.MotionEvent;
 /**
  * An Event source for getting Monkey Shell Script commands from over the shell.
  */
-public class MonkeySourceShell implements MonkeyEventSource {
+public class MonkeySourceNetwork implements MonkeyEventSource {
     private static final String TAG = "MonkeyStub";
     /* The version of the monkey shell protocol */
     public static final int MONKEY_SHELL_VERSION = 1;
@@ -651,14 +653,14 @@ public class MonkeySourceShell implements MonkeyEventSource {
         COMMAND_MAP.put("type", new TypeCommand());
         COMMAND_MAP.put("copy", new CopyCommand());
         COMMAND_MAP.put("slide", new SlideCommand());
-        COMMAND_MAP.put("listvar", new MonkeySourceShellVars.ListVarCommand());
-        COMMAND_MAP.put("getvar", new MonkeySourceShellVars.GetVarCommand());
-        COMMAND_MAP.put("queryview", new MonkeySourceShellViews.QueryViewCommand());
-        COMMAND_MAP.put("getrootview", new MonkeySourceShellViews.GetRootViewCommand());
-        COMMAND_MAP.put("getisviewchange", new MonkeySourceShellViews.GetIsChangeCommand());
-        COMMAND_MAP.put("getviewswithtext", new MonkeySourceShellViews.GetViewsWithTextCommand());
+        COMMAND_MAP.put("listvar", new MonkeySourceNetworkVars.ListVarCommand());
+        COMMAND_MAP.put("getvar", new MonkeySourceNetworkVars.GetVarCommand());
+        COMMAND_MAP.put("queryview", new MonkeySourceNetworkViews.QueryViewCommand());
+        COMMAND_MAP.put("getrootview", new MonkeySourceNetworkViews.GetRootViewCommand());
+        COMMAND_MAP.put("getisviewchange", new MonkeySourceNetworkViews.GetIsChangeCommand());
+        COMMAND_MAP.put("getviewswithtext", new MonkeySourceNetworkViews.GetViewsWithTextCommand());
         COMMAND_MAP.put("deferreturn", new DeferReturnCommand());
-        COMMAND_MAP.put("takescreenshot", new MonkeySourceShellViews.TakeScreenshot());
+        COMMAND_MAP.put("takescreenshot", new MonkeySourceNetworkViews.TakeScreenshot());
         COMMAND_MAP.put("echo", new EchoCommand());
         COMMAND_MAP.put("gettopactivity", new GetTopActivityCommand());
         COMMAND_MAP.put("play", new PlayAudioCommand());
@@ -727,8 +729,8 @@ public class MonkeySourceShell implements MonkeyEventSource {
             switch (event) {
                 case ON_WINDOW_STATE_CHANGE:
                     try {
-                        synchronized (MonkeySourceShellViews.class) {
-                            MonkeySourceShellViews.class.wait(timeout);
+                        synchronized (MonkeySourceNetworkViews.class) {
+                            MonkeySourceNetworkViews.class.wait(timeout);
                         }
                     } catch (InterruptedException e) {
                         Log.d(TAG, "Deferral interrupted: " + e.getMessage());
@@ -744,15 +746,20 @@ public class MonkeySourceShell implements MonkeyEventSource {
     private PrintWriter output;
     private static IActivityManager mAm;
 
-    MonkeySourceShell(IActivityManager mAm) {
-        MonkeySourceShell.mAm = mAm;
-        MonkeySourceShellViews.setup();
+    MonkeySourceNetwork(IActivityManager mAm, Socket socket) throws IOException {
+        MonkeySourceNetwork.mAm = mAm;
+        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+        // auto-flush
+        output = new PrintWriter(socket.getOutputStream(), true);
+
+        String hello = input.readLine();
+        if (!"!@#$%^&*()".equals(hello.trim())) {
+            throw new IllegalStateException("wrong hello msg!");
+        }
+
         // Wake the device up in preparation for doing some commands.
         wake();
 
-        input = new BufferedReader(new InputStreamReader(System.in));
-        // auto-flush
-        output = new PrintWriter(System.out, true);
     }
 
     /**
