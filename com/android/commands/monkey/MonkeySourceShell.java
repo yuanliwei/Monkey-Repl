@@ -618,18 +618,19 @@ public class MonkeySourceShell implements MonkeyEventSource {
     private static final boolean wake() {
         IPowerManager pm = IPowerManager.Stub.asInterface(ServiceManager.getService(Context.POWER_SERVICE));
         try {
+            pm.wakeUp(SystemClock.uptimeMillis(), PowerManager.WAKE_REASON_UNKNOWN, "Monkey", null);
+        } catch (Throwable e) {
             try {
+                pm.wakeUp(SystemClock.uptimeMillis(), "Monkey", null);
+            } catch (Throwable e1) {
                 try {
-                    pm.wakeUp(SystemClock.uptimeMillis(), PowerManager.WAKE_REASON_UNKNOWN, "Monkey", null);
-                } catch (NoSuchMethodError e) {
-                    pm.wakeUp(SystemClock.uptimeMillis(), "Monkey", null);
+                    pm.wakeUp(SystemClock.uptimeMillis());
+                } catch (Throwable e2) {
+                    Log.e(TAG, "Got remote exception", e2);
+                    e2.printStackTrace();
+                    return false;
                 }
-            } catch (NoSuchMethodError error) {
-                pm.wakeUp(SystemClock.uptimeMillis());
             }
-        } catch (RemoteException e) {
-            Log.e(TAG, "Got remote exception", e);
-            return false;
         }
         return true;
     }
