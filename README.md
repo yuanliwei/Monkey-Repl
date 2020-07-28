@@ -82,6 +82,8 @@ monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改�
     - `press KEYCODE_PASTE`
     - `press KEYCODE_UP`
     - `press KEYCODE_DOWN`
+    - `key down POWER`
+    - `key up POWER`
 - 模拟屏幕触摸事件
     - `touch [down|up|move] [x] [y]`
     - 点击
