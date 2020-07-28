@@ -7,9 +7,9 @@ com/android/commands/monkey/MonkeyKeyEvent.java
 com/android/commands/monkey/MonkeyMotionEvent.java
 com/android/commands/monkey/MonkeyNoopEvent.java
 com/android/commands/monkey/MonkeyRotationEvent.java
-com/android/commands/monkey/MonkeySourceShell.java
-com/android/commands/monkey/MonkeySourceShellVars.java
-com/android/commands/monkey/MonkeySourceShellViews.java
+com/android/commands/monkey/MonkeySourceNetwork.java
+com/android/commands/monkey/MonkeySourceNetworkVars.java
+com/android/commands/monkey/MonkeySourceNetworkViews.java
 com/android/commands/monkey/MonkeyThrottleEvent.java
 com/android/commands/monkey/MonkeyTouchEvent.java
 com/android/commands/monkey/MonkeyTrackballEvent.java

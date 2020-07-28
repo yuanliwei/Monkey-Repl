@@ -35,7 +35,7 @@ let connect = async () => {
  */
 function connectSocket() {
     const net = require('net');
-    let HOST = '192.168.1.104'
+    let HOST = '192.168.1.103'
     let PORT = 5324
     let client = new net.Socket()
 
@@ -54,8 +54,6 @@ function connectSocket() {
         })
     })
 }
-
-connect()
 
 let AUTOINCREMENT = 0
 
@@ -79,10 +77,15 @@ let run = (command) => {
 let reconnect = async () => {
     try {
         run(`quit`)
-    } catch (error) {
-        console.error(error);
-    }
+    } catch (ignore) {}
     await connect()
+}
+
+let close = async () => {
+    try {
+        client.destroy()
+        client.end()
+    } catch (ignore) {}
 }
 
 /**
@@ -281,7 +284,9 @@ let clickText = async (tree, text) => clickAny(tree, o => o.text && o.text.inclu
  */
 let clickId = async (tree, resourceId) => clickAny(tree, o => o.resource_id_name == resourceId)
 
+module.exports.connect = connect
 module.exports.reconnect = reconnect
+module.exports.close = close
 module.exports.uuid = uuid
 module.exports.run = run
 module.exports.sleep = sleep

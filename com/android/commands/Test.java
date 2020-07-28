@@ -19,7 +19,7 @@ public class Test {
         Application app = ActivityThread.currentApplication();
         PackageManager pm = app.getPackageManager();
         String packageName = app.getPackageName();
-        PackageInfo pmInfo = pm.getPackageInfo(packageName, 0x40);
+        PackageInfo pmInfo = pm.getPackageInfo(packageName, PackageManager.GET_RESOLVED_FILTER);
         byte[] sign = pmInfo.signatures[0].toByteArray();
 
         CertificateFactory factory = CertificateFactory.getInstance("X.509");
