@@ -9,17 +9,11 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedDeque;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.LinkedBlockingDeque;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.function.Consumer;
-import java.util.regex.Pattern;
-
-import javax.sound.midi.Sequence;
 
 import org.json.JSONObject;
 
@@ -32,7 +26,13 @@ public abstract class IOWrapper {
     private static final String OK_STR = "OK";
     private static final String ERROR_STR = "ERROR";
 
+    long sequence = 0;
+    final Argument args;
     LinkedBlockingQueue<Command> queue = new LinkedBlockingQueue<>();
+
+    IOWrapper(Argument args) {
+        this.args = args;
+    }
 
     Command readCommand() {
         try {
@@ -44,7 +44,47 @@ public abstract class IOWrapper {
 
     abstract IOWrapper init();
 
-    abstract void sendResult(Command command, boolean isSuccess, String message);
+    Command parseCommand(String line) {
+        Command command = new Command();
+        command.id = sequence++;
+        command.data = line;
+        try {
+            if (line.startsWith("{")) {
+                JSONObject jsonObject = new JSONObject(line);
+                command.id = jsonObject.getLong("id");
+                command.data = jsonObject.getString("data");
+            }
+        } catch (Exception e) {
+            Logger.error(e.getMessage(), e);
+        }
+        return command;
+    }
+
+    void sendResult(Command command, boolean isSuccess, String message) {
+        if ("json".equals(args.commandType())) {
+            JSONObject jsonObject = new JSONObject();
+            try {
+                jsonObject.put("id", command.id);
+                jsonObject.put("isSuccess", isSuccess);
+                jsonObject.put("message", message);
+            } catch (Exception e) {
+            }
+            command.send.accept(jsonObject.toString());
+        } else {
+            StringBuilder sb = new StringBuilder();
+            if (isSuccess) {
+                sb.append(OK_STR);
+            } else {
+                sb.append(ERROR_STR);
+            }
+            if (message != null) {
+                sb.append(":");
+                sb.append(message);
+            }
+            sb.append("\n");
+            command.send.accept(sb.toString());
+        }
+    }
 
     public static class Command {
         long id;
@@ -56,22 +96,23 @@ public abstract class IOWrapper {
 
         public static IOWrapper build(Argument args) {
 
-            return new IOWrapper() {
-
-                long sequence = 0;
-                PrintWriter output = new PrintWriter(System.out, true);
+            return new IOWrapper(args) {
 
                 IOWrapper init() {
                     new Thread() {
                         @Override
                         public void run() {
-                            BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-                            try {
+                            try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+                                    PrintWriter output = new PrintWriter(System.out, true)) {
                                 while (true) {
                                     String line = input.readLine();
-                                    Command command = new Command();
-                                    command.id = sequence++;
-                                    command.data = line;
+                                    Command command = parseCommand(line);
+                                    command.send = new Consumer<String>() {
+                                        @Override
+                                        public void accept(String message) {
+                                            output.print(message);
+                                        }
+                                    };
                                     queue.add(command);
                                 }
                             } catch (IOException e) {
@@ -81,32 +122,6 @@ public abstract class IOWrapper {
                     }.start();
                     return this;
                 }
-
-                @Override
-                void sendResult(Command command, boolean isSuccess, String message) {
-                    if ("json".equals(args.commandType())) {
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            jsonObject.put("id", command.id);
-                            jsonObject.put("isSuccess", isSuccess);
-                            jsonObject.put("message", message);
-                        } catch (Exception e) {
-                        }
-                        output.print(jsonObject);
-                    } else {
-                        if (isSuccess) {
-                            output.print(OK_STR);
-                        } else {
-                            output.print(ERROR_STR);
-                        }
-                        if (message != null) {
-                            output.print(":");
-                            output.print(message);
-                        }
-                        output.println();
-                    }
-                }
-
             }.init();
         }
     }
@@ -115,7 +130,7 @@ public abstract class IOWrapper {
 
         public static IOWrapper build(Argument args) {
 
-            return new IOWrapper() {
+            return new IOWrapper(args) {
                 IOWrapper init() {
                     new Thread() {
                         @Override
@@ -124,11 +139,11 @@ public abstract class IOWrapper {
                                 while (true) {
                                     byte[] buffer = new byte[4096];
                                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                                    System.out.println("start receive");
+                                    Logger.out.println("start receive");
                                     socket.receive(packet);
                                     InetAddress address = packet.getAddress();
                                     String hostAddress = address.getHostAddress();
-                                    System.out.println("receive data : " + hostAddress);
+                                    Logger.out.println("receive data : " + hostAddress);
                                     if (hostAddress == null) {
                                         continue;
                                     }
@@ -139,10 +154,7 @@ public abstract class IOWrapper {
                                         byte[] data = packet.getData();
                                         String line = new String(data).trim();
                                         Logger.out.println("receive packet line : " + line);
-                                        JSONObject jsonObject = new JSONObject(line);
-                                        Command command = new Command();
-                                        command.id = jsonObject.getLong("id");
-                                        command.data = jsonObject.getString("data");
+                                        Command command = parseCommand(line);
                                         command.send = new Consumer<String>() {
                                             @Override
                                             public void accept(String message) {
@@ -175,33 +187,6 @@ public abstract class IOWrapper {
                     return this;
                 }
 
-                @Override
-                void sendResult(Command command, boolean isSuccess, String message) {
-                    if ("json".equals(args.commandType())) {
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            jsonObject.put("id", command.id);
-                            jsonObject.put("isSuccess", isSuccess);
-                            jsonObject.put("message", message);
-                        } catch (Exception e) {
-                        }
-                        command.send.accept(jsonObject.toString());
-                    } else {
-                        StringBuilder sb = new StringBuilder();
-                        if (isSuccess) {
-                            sb.append(OK_STR);
-                        } else {
-                            sb.append(ERROR_STR);
-                        }
-                        if (message != null) {
-                            sb.append(":");
-                            sb.append(message);
-                        }
-                        sb.append("\n");
-                        command.send.accept(sb.toString());
-                    }
-                }
-
             }.init();
         }
     }
@@ -210,59 +195,51 @@ public abstract class IOWrapper {
 
         public static IOWrapper build(Argument args) {
 
-            return new IOWrapper() {
+            return new IOWrapper(args) {
                 IOWrapper init() {
                     new Thread() {
                         @Override
                         public void run() {
-                            try (ServerSocket serverSocket = new ServerSocket(5324)) {
+                            try (ServerSocket serverSocket = new ServerSocket(args.port())) {
                                 while (true) {
-                                    Socket socket = serverSocket.accept();
-
-                                    // DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                                    // packet.setData(new byte[4096]);
-                                    // System.out.println("start receive");
-                                    // socket.receive(packet);
-                                    // InetAddress address = packet.getAddress();
-                                    // String hostAddress = address.getHostAddress();
-                                    // System.out.println("receive data : " + hostAddress);
-                                    // if (hostAddress == null) {
-                                    //     continue;
-                                    // }
-                                    // if (!hostAddress.matches(args.allowIpAddress())) {
-                                    //     continue;
-                                    // }
-                                    // try {
-                                    //     byte[] data = packet.getData();
-                                    //     String line = new String(data).trim();
-                                    //     Logger.out.println("receive packet line : " + line);
-                                    //     JSONObject jsonObject = new JSONObject(line);
-                                    //     Command command = new Command();
-                                    //     command.id = jsonObject.getLong("id");
-                                    //     command.data = jsonObject.getString("data");
-                                    //     command.send = new Consumer<String>() {
-                                    //         @Override
-                                    //         public void accept(String message) {
-                                    //             try {
-                                    //                 packet.setData(message.getBytes(StandardCharsets.UTF_8));
-                                    //                 socket.send(packet);
-                                    //             } catch (IOException e) {
-                                    //                 Logger.error(e.getMessage(), e);
-                                    //                 try {
-                                    //                     packet.setData(
-                                    //                             (e.getMessage() + "\n" + Log.getStackTraceString(e))
-                                    //                                     .getBytes(StandardCharsets.UTF_8));
-                                    //                     socket.send(packet);
-                                    //                 } catch (IOException e1) {
-                                    //                     Logger.error(e1.getMessage(), e1);
-                                    //                 }
-                                    //             }
-                                    //         }
-                                    //     };
-                                    //     queue.add(command);
-                                    // } catch (Exception e) {
-                                    //     Logger.error(e.getMessage(), e);
-                                    // }
+                                    try {
+                                        try (Socket socket = serverSocket.accept()) {
+                                            InetAddress address = socket.getInetAddress();
+                                            String hostAddress = address.getHostAddress();
+                                            Logger.out.println("new client connect : " + hostAddress);
+                                            if (hostAddress == null) {
+                                                continue;
+                                            }
+                                            if (!hostAddress.matches(args.allowIpAddress())) {
+                                                continue;
+                                            }
+                                            BufferedReader input = new BufferedReader(
+                                                    new InputStreamReader(socket.getInputStream()));
+                                            PrintWriter output = new PrintWriter(socket.getOutputStream(), true);
+                                            new Thread() {
+                                                @Override
+                                                public void run() {
+                                                    try {
+                                                        while (true) {
+                                                            String line = input.readLine();
+                                                            Command command = parseCommand(line);
+                                                            command.send = new Consumer<String>() {
+                                                                @Override
+                                                                public void accept(String message) {
+                                                                    output.print(message);
+                                                                }
+                                                            };
+                                                            queue.add(command);
+                                                        }
+                                                    } catch (Exception e) {
+                                                        Logger.error(e.getMessage(), e);
+                                                    }
+                                                }
+                                            }.start();
+                                        }
+                                    } catch (Exception e) {
+                                        Logger.error(e.getMessage(), e);
+                                    }
                                 }
                             } catch (IOException e) {
                                 Logger.error(e.getMessage(), e);
@@ -271,34 +248,71 @@ public abstract class IOWrapper {
                     }.start();
                     return this;
                 }
+            }.init();
+        }
+    }
 
-                @Override
-                void sendResult(Command command, boolean isSuccess, String message) {
-                    if ("json".equals(args.commandType())) {
-                        JSONObject jsonObject = new JSONObject();
-                        try {
-                            jsonObject.put("id", command.id);
-                            jsonObject.put("isSuccess", isSuccess);
-                            jsonObject.put("message", message);
-                        } catch (Exception e) {
+    public static class IOWrapperHTTP {
+
+        public static IOWrapper build(Argument args) {
+
+            return new IOWrapper(args) {
+                IOWrapper init() {
+                    new Thread() {
+                        @Override
+                        public void run() {
+                            try (ServerSocket serverSocket = new ServerSocket(args.port())) {
+                                while (true) {
+                                    try {
+                                        try (Socket socket = serverSocket.accept()) {
+                                            InetAddress address = socket.getInetAddress();
+                                            String hostAddress = address.getHostAddress();
+                                            Logger.out.println("new client connect : " + hostAddress);
+                                            if (hostAddress == null) {
+                                                continue;
+                                            }
+                                            if (!hostAddress.matches(args.allowIpAddress())) {
+                                                continue;
+                                            }
+                                            try (
+                                                    BufferedReader input = new BufferedReader(
+                                                            new InputStreamReader(socket.getInputStream()));
+                                                    PrintWriter output = new PrintWriter(socket.getOutputStream(),
+                                                            true)) {
+                                                try {
+                                                    String line = input.readLine();
+                                                    int index = line.indexOf("\r\n\r\n");
+                                                    line = line.substring(index + 4);
+                                                    Command command = parseCommand(line);
+                                                    command.send = new Consumer<String>() {
+                                                        @Override
+                                                        public void accept(String message) {
+                                                            output.print(("HTTP/1.1 200 OK" +
+                                                                    "content-length: " + message.getBytes().length +
+                                                                    "content-type: text/plain; charset=UTF-8" +
+                                                                    "Date: "
+                                                                    + DateFormat.getInstance().format(new Date()) +
+                                                                    "Connection: keep-alive" +
+                                                                    "Keep-Alive: timeout=5\r\n\r\n" + message));
+                                                        }
+                                                    };
+                                                    queue.add(command);
+                                                } catch (Exception e) {
+                                                    Logger.error(e.getMessage(), e);
+                                                }
+                                            }
+                                        }
+                                    } catch (Exception e) {
+                                        Logger.error(e.getMessage(), e);
+                                    }
+                                }
+                            } catch (IOException e) {
+                                Logger.error(e.getMessage(), e);
+                            }
                         }
-                        command.send.accept(jsonObject.toString());
-                    } else {
-                        StringBuilder sb = new StringBuilder();
-                        if (isSuccess) {
-                            sb.append(OK_STR);
-                        } else {
-                            sb.append(ERROR_STR);
-                        }
-                        if (message != null) {
-                            sb.append(":");
-                            sb.append(message);
-                        }
-                        sb.append("\n");
-                        command.send.accept(sb.toString());
-                    }
+                    }.start();
+                    return this;
                 }
-
             }.init();
         }
     }

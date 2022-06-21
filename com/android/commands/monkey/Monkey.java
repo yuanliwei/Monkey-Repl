@@ -144,12 +144,15 @@ public class Monkey {
             }
         }
 
-        IOWrapper ioWrapper = IOWrapper.IOWrapperStdio.build(args);
+        IOWrapper ioWrapper = null;
         if ("udp".equals(args.type())) {
             ioWrapper = IOWrapper.IOWrapperUDP.build(args);
-        }
-        if ("tcp".equals(args.type())) {
+        } else if ("tcp".equals(args.type())) {
             ioWrapper = IOWrapper.IOWrapperTCP.build(args);
+        } else if ("http".equals(args.type())) {
+            ioWrapper = IOWrapper.IOWrapperHTTP.build(args);
+        } else { // repl
+            ioWrapper = IOWrapper.IOWrapperStdio.build(args);
         }
 
         if (ioWrapper == null) {

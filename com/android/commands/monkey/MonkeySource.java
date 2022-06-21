@@ -15,7 +15,6 @@
  */
 package com.android.commands.monkey;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.ArrayList;
@@ -499,18 +498,13 @@ public class MonkeySource implements MonkeyEventSource {
             return new MonkeyCommandReturn(true, String.valueOf(duration));
         }
     }
- 
+
     /**
-     * Command to play audio
+     * Command help
      */
     private static class HelpCommand implements MonkeyCommand {
 
-        MediaPlayer player = null;
-
-        // play /mnt/sdcard/tts.mp3
-
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
-            
             return new MonkeyCommandReturn(true, MonkeyUtils.getHelp());
         }
     }
