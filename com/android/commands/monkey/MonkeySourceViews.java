@@ -16,7 +16,7 @@
 
 package com.android.commands.monkey;
 
-import static com.android.commands.monkey.MonkeySourceNetwork.EARG;
+import static com.android.commands.monkey.MonkeySource.EARG;
 
 import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
@@ -24,9 +24,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import com.android.commands.monkey.MonkeySourceNetwork.CommandQueue;
-import com.android.commands.monkey.MonkeySourceNetwork.MonkeyCommand;
-import com.android.commands.monkey.MonkeySourceNetwork.MonkeyCommandReturn;
+import com.android.commands.monkey.MonkeySource.CommandQueue;
+import com.android.commands.monkey.MonkeySource.MonkeyCommand;
+import com.android.commands.monkey.MonkeySource.MonkeyCommandReturn;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -54,7 +54,7 @@ import android.view.accessibility.AccessibilityWindowInfo;
  * Utility class that enables Monkey to perform view introspection when issued
  * Monkey Network Script commands over the network.
  */
-public class MonkeySourceNetworkViews {
+public class MonkeySourceViews {
 
     protected static UiAutomation sUiTestAutomationBridge;
 
@@ -114,13 +114,14 @@ public class MonkeySourceNetworkViews {
         sHandlerThread.start();
         mUiAutomationConnection = new UiAutomationConnection();
         sUiTestAutomationBridge = new UiAutomation(sHandlerThread.getLooper(), mUiAutomationConnection);
-        sUiTestAutomationBridge.setOnAccessibilityEventListener(listener);
         sUiTestAutomationBridge.connect();
+        sUiTestAutomationBridge.setOnAccessibilityEventListener(listener);
     }
 
     public static void reconnect() {
         sUiTestAutomationBridge.disconnect();
         sUiTestAutomationBridge.connect();
+        sUiTestAutomationBridge.setOnAccessibilityEventListener(listener);
     }
 
     private static AccessibilityNodeInfo getNodeByAccessibilityIds(String windowString, String viewString) {

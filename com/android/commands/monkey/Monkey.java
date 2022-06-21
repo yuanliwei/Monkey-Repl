@@ -16,8 +16,9 @@
 
 package com.android.commands.monkey;
 
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 import android.app.ActivityManager;
 import android.app.ActivityManagerNative;
@@ -106,9 +107,10 @@ public class Monkey {
         }
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args_) {
         // Set the process name showing in "ps" or "top"
-        Process.setArgV0("monkey-repl");
+        Argument args = new Argument(args_);
+        Process.setArgV0(args.name());
         int resultCode = new Monkey().run(args);
         System.exit(resultCode);
     }
@@ -119,83 +121,51 @@ public class Monkey {
      * @param args The command-line arguments
      * @return Returns a posix-style result code. 0 for no error.
      */
-    private int run(String[] args) {
+    private int run(Argument args) {
+
+        if ("repl".equals(args.type())) {
+            Logger.out.println(MonkeyUtils.getHelp());
+        }
 
         if (!getSystemInterfaces()) {
             Logger.err.println("getSystemInterfaces error!");
             return -3;
         }
 
-        try {
-            MonkeySourceNetworkViews.setup();
-        } catch (Throwable e) {
-            Logger.error(e.getMessage(), e);
+        if (args.queryView()) {
+            MonkeySourceViews.setup();
+        }
+
+        if (args.activityController()) {
+            try {
+                mAm.setActivityController(new ActivityController(), false);
+            } catch (Throwable e) {
+                mAm.setActivityController(new ActivityController());
+            }
+        }
+
+        IOWrapper ioWrapper = IOWrapper.IOWrapperStdio.build(args);
+        if ("udp".equals(args.type())) {
+            ioWrapper = IOWrapper.IOWrapperUDP.build(args);
+        }
+        if ("tcp".equals(args.type())) {
+            ioWrapper = IOWrapper.IOWrapperTCP.build(args);
+        }
+
+        if (ioWrapper == null) {
             return -4;
         }
 
-        while (true) {
-            try {
-                ServerSocket serverSocket = new ServerSocket(5324);
-
-                try {
-                    mAm.setActivityController(new ActivityController(), false);
-                } catch (Throwable e) {
-                    mAm.setActivityController(new ActivityController());
-                }
-
-                Logger.out.println("start ServerSocket on 5324.");
-
-                while (true) {
-                    try {
-
-                        Logger.out.println("wait accept client ... ");
-
-                        Socket socket = serverSocket.accept();
-
-                        Logger.out.println("accept client : " + socket.getRemoteSocketAddress());
-                        new Thread() {
-
-                            @Override
-                            public void run() {
-                                try {
-                                    MonkeyEventSource mEventSource = new MonkeySourceNetwork(mAm, socket);
-                                    try {
-                                        runMonkeyCycles(mEventSource);
-                                    } finally {
-                                        // Release the rotation lock if it's still held and restore the
-                                        // original orientation.
-                                        new MonkeyRotationEvent(Surface.ROTATION_0, false).injectEvent(mWm, mAm, 0);
-                                    }
-                                } catch (Throwable e) {
-                                    Logger.error(e.getMessage(), e);
-                                }
-                            }
-                        }.start();
-                    } catch (Throwable e) {
-                        Logger.error(e.getMessage(), e);
-                        serverSocket.close();
-                        break;
-                    }
-                }
-
-                try {
-                    mAm.setActivityController(null, false);
-                } catch (Throwable e1) {
-                    mAm.setActivityController(null);
-                }
-
-            } catch (Throwable e) {
-                Logger.error(e.getMessage(), e);
-                if (e.getMessage().contains("EADDRINUSE")) {
-                    return 0;
-                }
-            }
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                Logger.error(e.getMessage(), e);
-            }
+        MonkeyEventSource mEventSource = new MonkeySource(mAm, ioWrapper);
+        try {
+            runMonkeyCycles(mEventSource);
+        } finally {
+            // Release the rotation lock if it's still held and restore the
+            // original orientation.
+            new MonkeyRotationEvent(Surface.ROTATION_0, false).injectEvent(mWm, mAm, 0);
         }
+
+        return 0;
     }
 
     /**
@@ -239,8 +209,8 @@ public class Monkey {
      *         errors detected.
      */
     private int runMonkeyCycles(MonkeyEventSource mEventSource) {
-        try {
-            while (true) {
+        while (true) {
+            try {
                 MonkeyEvent ev = mEventSource.getNextEvent();
                 if (ev != null) {
                     int injectCode = ev.injectEvent(mWm, mAm, 0);
@@ -254,11 +224,74 @@ public class Monkey {
                 } else {
                     break;
                 }
+            } catch (RuntimeException e) {
+                Logger.error("** Error: A RuntimeException occurred:", e);
             }
-        } catch (RuntimeException e) {
-            Logger.error("** Error: A RuntimeException occurred:", e);
         }
         return 0; // eventCounter;
     }
 
+    public static class Argument {
+        Map<String, String> map = new HashMap<>();
+
+        public Argument(String[] args) {
+            System.out.println(args);
+            System.out.println(Arrays.toString(args));
+            String key = null;
+            for (int i = 0; i < args.length; i++) {
+                String item = args[i];
+                if (key == null) {
+                    key = item;
+                    continue;
+                } else {
+                    map.put(key, item);
+                    key = null;
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private <T> T getValue(String key, T defaultValue) {
+            String v = map.get(key);
+            if (v == null) {
+                return defaultValue;
+            } else {
+                if (defaultValue instanceof Boolean) {
+                    return (T) Boolean.valueOf(v);
+                }
+                if (defaultValue instanceof Integer) {
+                    return (T) Integer.valueOf(v);
+                }
+                return (T) v;
+            }
+        }
+
+        public String type() {
+            return getValue("--type", "repl");
+        }
+
+        public String commandType() {
+            return getValue("--command_type", "text");
+        }
+
+        public String name() {
+            return getValue("--name", "monkey-repl");
+        }
+
+        public int port() {
+            return getValue("--port", 5678);
+        }
+
+        public String allowIpAddress() {
+            return getValue("--allow_ip_address", "all");
+        }
+
+        public boolean queryView() {
+            return getValue("--query_view", true);
+        }
+
+        public boolean activityController() {
+            return getValue("--activity_controller", true);
+        }
+    }
 }

@@ -21,9 +21,9 @@ import android.os.SystemClock;
 import android.view.Display;
 import android.util.DisplayMetrics;
 
-import com.android.commands.monkey.MonkeySourceNetwork.CommandQueue;
-import com.android.commands.monkey.MonkeySourceNetwork.MonkeyCommand;
-import com.android.commands.monkey.MonkeySourceNetwork.MonkeyCommandReturn;
+import com.android.commands.monkey.MonkeySource.CommandQueue;
+import com.android.commands.monkey.MonkeySource.MonkeyCommand;
+import com.android.commands.monkey.MonkeySource.MonkeyCommandReturn;
 
 import java.lang.Integer;
 import java.lang.Float;
@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-public class MonkeySourceNetworkVars {
+public class MonkeySourceVars {
     /**
      * Interface to get the value of a var.
      */
@@ -161,7 +161,7 @@ public class MonkeySourceNetworkVars {
             });
         VAR_MAP.put("monkey.version", new VarGetter() {
                 public String get() {
-                    return Integer.toString(MonkeySourceNetwork.MONKEY_SHELL_VERSION);
+                    return Integer.toString(MonkeySource.MONKEY_SHELL_VERSION);
                 }
             });
     }
@@ -169,7 +169,7 @@ public class MonkeySourceNetworkVars {
     /**
      * Command to list the "vars" that the monkey knows about.
      */
-    public static class ListVarCommand implements MonkeySourceNetwork.MonkeyCommand {
+    public static class ListVarCommand implements MonkeySource.MonkeyCommand {
         // listvar
         public MonkeyCommandReturn translateCommand(List<String> command,
                                                     CommandQueue queue) {
@@ -196,7 +196,7 @@ public class MonkeySourceNetworkVars {
                 }
                 return new MonkeyCommandReturn(true, getter.get());
             }
-            return MonkeySourceNetwork.EARG;
+            return MonkeySource.EARG;
         }
     }
 }

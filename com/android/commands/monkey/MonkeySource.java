@@ -15,12 +15,8 @@
  */
 package com.android.commands.monkey;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.net.Socket;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.StringTokenizer;
+
+import com.android.commands.monkey.IOWrapper.Command;
 
 import android.app.ActivityManager.RunningTaskInfo;
 import android.app.IActivityManager;
@@ -53,11 +51,10 @@ import android.view.MotionEvent;
 /**
  * An Event source for getting Monkey Shell Script commands from over the shell.
  */
-public class MonkeySourceNetwork implements MonkeyEventSource {
+public class MonkeySource implements MonkeyEventSource {
     private static final String TAG = "MonkeyStub";
     /* The version of the monkey shell protocol */
     public static final int MONKEY_SHELL_VERSION = 1;
-    private static DeferredReturn deferredReturn;
 
     /**
      * ReturnValue from the MonkeyCommand that indicates whether the command was
@@ -502,6 +499,21 @@ public class MonkeySourceNetwork implements MonkeyEventSource {
             return new MonkeyCommandReturn(true, String.valueOf(duration));
         }
     }
+ 
+    /**
+     * Command to play audio
+     */
+    private static class HelpCommand implements MonkeyCommand {
+
+        MediaPlayer player = null;
+
+        // play /mnt/sdcard/tts.mp3
+
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            
+            return new MonkeyCommandReturn(true, MonkeyUtils.getHelp());
+        }
+    }
 
     /**
      * Command to wake the device up
@@ -569,50 +581,6 @@ public class MonkeySourceNetwork implements MonkeyEventSource {
     }
 
     /**
-     * Command to defer the return of another command until the given event occurs.
-     * deferreturn takes three arguments. It takes an event to wait for (e.g.
-     * waiting for the device to display a different activity would the
-     * "screenchange" event), a timeout, which is the number of microseconds to wait
-     * for the event to occur, and it takes a command. The command can be any other
-     * Monkey command that can be issued over the shell (e.g. press KEYCODE_HOME).
-     * deferreturn will then run this command, return an OK, wait for the event to
-     * occur and return the deferred return value when either the event occurs or
-     * when the timeout is reached (whichever occurs first). Note that there is no
-     * difference between an event occurring and the timeout being reached; the
-     * client will have to verify that the change actually occured.
-     *
-     * Example: deferreturn screenchange 1000 press KEYCODE_HOME This command will
-     * press the home key on the device and then wait for the screen to change for
-     * up to one second. Either the screen will change, and the results fo the key
-     * press will be returned to the client, or the timeout will be reached, and the
-     * results for the key press will be returned to the client.
-     */
-    private static class DeferReturnCommand implements MonkeyCommand {
-        // deferreturn [event] [timeout (ms)] [command]
-        // deferreturn screenchange 100 tap 10 10
-        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
-            if (command.size() > 3) {
-                String event = command.get(1);
-                int eventId;
-                if (event.equals("screenchange")) {
-                    eventId = DeferredReturn.ON_WINDOW_STATE_CHANGE;
-                } else {
-                    return EARG;
-                }
-                long timeout = Long.parseLong(command.get(2));
-                MonkeyCommand deferredCommand = COMMAND_MAP.get(command.get(3));
-                if (deferredCommand != null) {
-                    List<String> parts = command.subList(3, command.size());
-                    MonkeyCommandReturn ret = deferredCommand.translateCommand(parts, queue);
-                    deferredReturn = new DeferredReturn(eventId, ret, timeout);
-                    return OK;
-                }
-            }
-            return EARG;
-        }
-    }
-
-    /**
      * Force the device to wake up.
      *
      * @return true if woken up OK.
@@ -653,25 +621,21 @@ public class MonkeySourceNetwork implements MonkeyEventSource {
         COMMAND_MAP.put("type", new TypeCommand());
         COMMAND_MAP.put("copy", new CopyCommand());
         COMMAND_MAP.put("slide", new SlideCommand());
-        COMMAND_MAP.put("listvar", new MonkeySourceNetworkVars.ListVarCommand());
-        COMMAND_MAP.put("getvar", new MonkeySourceNetworkVars.GetVarCommand());
-        COMMAND_MAP.put("queryview", new MonkeySourceNetworkViews.QueryViewCommand());
-        COMMAND_MAP.put("getrootview", new MonkeySourceNetworkViews.GetRootViewCommand());
-        COMMAND_MAP.put("getisviewchange", new MonkeySourceNetworkViews.GetIsChangeCommand());
-        COMMAND_MAP.put("getviewswithtext", new MonkeySourceNetworkViews.GetViewsWithTextCommand());
-        COMMAND_MAP.put("deferreturn", new DeferReturnCommand());
-        COMMAND_MAP.put("takescreenshot", new MonkeySourceNetworkViews.TakeScreenshot());
+        COMMAND_MAP.put("listvar", new MonkeySourceVars.ListVarCommand());
+        COMMAND_MAP.put("getvar", new MonkeySourceVars.GetVarCommand());
+        COMMAND_MAP.put("queryview", new MonkeySourceViews.QueryViewCommand());
+        COMMAND_MAP.put("getrootview", new MonkeySourceViews.GetRootViewCommand());
+        COMMAND_MAP.put("getisviewchange", new MonkeySourceViews.GetIsChangeCommand());
+        COMMAND_MAP.put("getviewswithtext", new MonkeySourceViews.GetViewsWithTextCommand());
+        COMMAND_MAP.put("takescreenshot", new MonkeySourceViews.TakeScreenshot());
         COMMAND_MAP.put("echo", new EchoCommand());
         COMMAND_MAP.put("gettopactivity", new GetTopActivityCommand());
         COMMAND_MAP.put("play", new PlayAudioCommand());
+        COMMAND_MAP.put("help", new HelpCommand());
     }
 
     // QUIT command
     private static final String QUIT = "quit";
-
-    // command response strings
-    private static final String OK_STR = "OK";
-    private static final String ERROR_STR = "ERROR";
 
     public static interface CommandQueue {
         /**
@@ -704,58 +668,14 @@ public class MonkeySourceNetwork implements MonkeyEventSource {
         }
     };
 
-    // A holder class for a deferred return value. This allows us to defer returning
-    // the success of
-    // a call until a given event has occurred.
-    private static class DeferredReturn {
-        public static final int ON_WINDOW_STATE_CHANGE = 1;
-
-        private int event;
-        private MonkeyCommandReturn deferredReturn;
-        private long timeout;
-
-        public DeferredReturn(int event, MonkeyCommandReturn deferredReturn, long timeout) {
-            this.event = event;
-            this.deferredReturn = deferredReturn;
-            this.timeout = timeout;
-        }
-
-        /**
-         * Wait until the given event has occurred before returning the value.
-         *
-         * @return The MonkeyCommandReturn from the command that was deferred.
-         */
-        public MonkeyCommandReturn waitForEvent() {
-            switch (event) {
-                case ON_WINDOW_STATE_CHANGE:
-                    try {
-                        synchronized (MonkeySourceNetworkViews.class) {
-                            MonkeySourceNetworkViews.class.wait(timeout);
-                        }
-                    } catch (InterruptedException e) {
-                        Log.d(TAG, "Deferral interrupted: " + e.getMessage());
-                    }
-            }
-            return deferredReturn;
-        }
-    };
-
     private final CommandQueueImpl commandQueue = new CommandQueueImpl();
 
-    private BufferedReader input;
-    private PrintWriter output;
+    final IOWrapper ioWrapper;
     private static IActivityManager mAm;
 
-    MonkeySourceNetwork(IActivityManager mAm, Socket socket) throws IOException {
-        MonkeySourceNetwork.mAm = mAm;
-        input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        // auto-flush
-        output = new PrintWriter(socket.getOutputStream(), true);
-
-        String hello = input.readLine();
-        if (!"!@#$%^&*()".equals(hello.trim())) {
-            throw new IllegalStateException("wrong hello msg!");
-        }
+    MonkeySource(IActivityManager mAm, IOWrapper ioWrapper) {
+        MonkeySource.mAm = mAm;
+        this.ioWrapper = ioWrapper;
 
         // Wake the device up in preparation for doing some commands.
         wake();
@@ -818,31 +738,39 @@ public class MonkeySourceNetwork implements MonkeyEventSource {
      * Translate the given command line into a MonkeyEvent.
      *
      * @param commandLine the full command line given.
+     * @param command
      */
-    private void translateCommand(String commandLine) {
+    private void translateCommand(Command command) {
+        String commandLine = command.data;
         Log.d(TAG, "translateCommand: " + commandLine);
         List<String> parts = commandLineSplit(commandLine);
         if (parts.size() > 0) {
-            MonkeyCommand command = COMMAND_MAP.get(parts.get(0));
-            if (command != null) {
-                MonkeyCommandReturn ret = command.translateCommand(parts, commandQueue);
-                handleReturn(ret);
+            MonkeyCommand monkeyCommand = COMMAND_MAP.get(parts.get(0));
+            if (monkeyCommand != null) {
+                MonkeyCommandReturn ret = monkeyCommand.translateCommand(parts, commandQueue);
+                handleReturn(command, ret);
+            } else {
+                handleReturn(command, null);
             }
         }
     }
 
-    private void handleReturn(MonkeyCommandReturn ret) {
+    private void handleReturn(Command command, MonkeyCommandReturn ret) {
+        if (ret == null) {
+            ioWrapper.sendResult(command, false, "not exists command!");
+            return;
+        }
         if (ret.wasSuccessful()) {
             if (ret.hasMessage()) {
-                returnOk(ret.getMessage());
+                ioWrapper.sendResult(command, true, ret.getMessage());
             } else {
-                returnOk();
+                ioWrapper.sendResult(command, true, null);
             }
         } else {
             if (ret.hasMessage()) {
-                returnError(ret.getMessage());
+                ioWrapper.sendResult(command, false, ret.getMessage());
             } else {
-                returnError();
+                ioWrapper.sendResult(command, false, null);
             }
         }
     }
@@ -860,38 +788,19 @@ public class MonkeySourceNetwork implements MonkeyEventSource {
                     return queuedEvent;
                 }
 
-                // Check to see if we have any returns that have been deferred. If so, now that
-                // we've run the queued commands, wait for the given event to happen (or the
-                // timeout
-                // to be reached), and handle the deferred MonkeyCommandReturn.
-                if (deferredReturn != null) {
-                    Log.d(TAG, "Waiting for event");
-                    MonkeyCommandReturn ret = deferredReturn.waitForEvent();
-                    deferredReturn = null;
-                    handleReturn(ret);
-                }
-
-                String command = input.readLine();
+                Command command = ioWrapper.readCommand();
 
                 if (command == null) {
                     continue;
                 }
 
                 // Do quit checking here
-                if (QUIT.equals(command)) {
+                if (QUIT.equals(command.data)) {
                     // then we're done
                     Log.d(TAG, "Quit requested");
                     // let the host know the command ran OK
-                    returnOk();
+                    handleReturn(command, OK);
                     return null;
-                }
-
-                // Do comment checking here. Comments aren't a
-                // command, so we don't echo anything back to the
-                // user.
-                if (command.startsWith("#")) {
-                    // keep going
-                    continue;
                 }
 
                 // Translate the command line. This will handle returning error/ok to the user
@@ -900,49 +809,13 @@ public class MonkeySourceNetwork implements MonkeyEventSource {
                 Log.i(TAG,
                         "translateCommand used time : "
                                 + String.format(Locale.getDefault(), "% 6d", System.currentTimeMillis() - time)
-                                + " , command : " + command);
+                                + " , command : " + command.data);
             }
         } catch (Exception e) {
             e.printStackTrace();
             Log.e(TAG, "Exception: ", e);
             return null;
         }
-    }
-
-    /**
-     * Returns ERROR to the user.
-     */
-    private void returnError() {
-        output.println(ERROR_STR);
-    }
-
-    /**
-     * Returns ERROR to the user.
-     *
-     * @param msg the error message to include
-     */
-    private void returnError(String msg) {
-        output.print(ERROR_STR);
-        output.print(":");
-        output.println(msg);
-    }
-
-    /**
-     * Returns OK to the user.
-     */
-    private void returnOk() {
-        output.println(OK_STR);
-    }
-
-    /**
-     * Returns OK to the user.
-     *
-     * @param returnValue the value to return from this command.
-     */
-    private void returnOk(String returnValue) {
-        output.print(OK_STR);
-        output.print(":");
-        output.println(returnValue);
     }
 
     public void setVerbose(int verbose) {

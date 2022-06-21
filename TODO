@@ -22,3 +22,14 @@
         at com.android.commands.monkey.Monkey.main(Monkey.java:112)
         at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
         at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:251)
+
+
+monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_ip_address 192.168.0.123 --query_view true --activity_controller true
+    --type                : [repl|network]  default : repl
+    --command_type        : [text|json]     default : text
+    --name                : string          default : monkey-repl
+    --port                : number          default : 5678
+    --allow_ip_address    : string          default : all
+    --query_view          : boolean         default : true
+    --activity_controller : boolean         default : true
+
