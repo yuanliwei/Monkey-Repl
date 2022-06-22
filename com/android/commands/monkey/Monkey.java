@@ -238,8 +238,7 @@ public class Monkey {
         Map<String, String> map = new HashMap<>();
 
         public Argument(String[] args) {
-            System.out.println(args);
-            System.out.println(Arrays.toString(args));
+            Logger.out.println(Arrays.toString(args));
             String key = null;
             for (int i = 0; i < args.length; i++) {
                 String item = args[i];

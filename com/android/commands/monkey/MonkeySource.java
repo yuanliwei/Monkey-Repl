@@ -371,7 +371,7 @@ public class MonkeySource implements MonkeyEventSource {
 
             try {
                 int x1, y1, x2, y2, time, step;
-                System.out.println("command size : " + command.size());
+                Logger.out.println("command size : " + command.size());
                 if (command.size() != 7) {
                     return EARG;
                 }
@@ -479,13 +479,13 @@ public class MonkeySource implements MonkeyEventSource {
                 player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                     @Override
                     public void onCompletion(MediaPlayer mp) {
-                        System.out.println("player onCompletion!");
+                        Logger.out.println("player onCompletion!");
                     }
                 });
                 player.setOnErrorListener(new MediaPlayer.OnErrorListener() {
                     @Override
                     public boolean onError(MediaPlayer mp, int what, int extra) {
-                        System.err.println("MediaPlayer ERROR : what:" + what + " extra:" + extra + "");
+                        Logger.err.println("MediaPlayer ERROR : what:" + what + " extra:" + extra + "");
                         return false;
                     }
                 });

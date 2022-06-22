@@ -22,6 +22,18 @@ monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改�
 - 输入 `queryview gettree text` 按 `enter`
 - 退出 `quit` 按 `enter`
 
+**启动参数**
+```
+monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_ip_address 192.168.0.123 --query_view true --activity_controller true
+    --type                : [repl|network]  default : repl
+    --command_type        : [text|json]     default : text
+    --name                : string          default : monkey-repl
+    --port                : number          default : 5678
+    --allow_ip_address    : string          default : all
+    --query_view          : boolean         default : true
+    --activity_controller : boolean         default : true
+```
+
 #### 脚本
 - 参考 demo 目录
 
