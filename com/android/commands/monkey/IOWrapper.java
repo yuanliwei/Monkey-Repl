@@ -66,13 +66,13 @@ public abstract class IOWrapper {
         return command;
     }
 
-    void sendResult(Command command, boolean isSuccess, String message) {
+    void sendResult(Command command, boolean isSuccess, String data) {
         if ("json".equals(args.commandType())) {
             JSONObject jsonObject = new JSONObject();
             try {
                 jsonObject.put("id", command.id);
                 jsonObject.put("isSuccess", isSuccess);
-                jsonObject.put("message", message);
+                jsonObject.put("data", data);
             } catch (Exception e) {
             }
             command.send.accept(jsonObject.toString());
@@ -83,9 +83,9 @@ public abstract class IOWrapper {
             } else {
                 sb.append(ERROR_STR);
             }
-            if (message != null) {
+            if (data != null) {
                 sb.append(":");
-                sb.append(message);
+                sb.append(data);
             }
             command.send.accept(sb.toString());
         }

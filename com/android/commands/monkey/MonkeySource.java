@@ -351,7 +351,11 @@ public class MonkeySource implements MonkeyEventSource {
                 IClipboard clipboard = IClipboard.Stub
                         .asInterface(ServiceManager.getService(Context.CLIPBOARD_SERVICE));
                 ClipData clip = ClipData.newPlainText("label", payload);
-                clipboard.setPrimaryClip(clip, "com.android.shell");
+                try {
+                    clipboard.setPrimaryClip(clip, "com.android.shell", 0);
+                } catch (Exception e) {
+                    clipboard.setPrimaryClip(clip, "com.android.shell");
+                }
 
                 return OK;
             } catch (UnsupportedEncodingException e) {

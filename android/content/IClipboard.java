@@ -20,6 +20,8 @@ public interface IClipboard extends android.os.IInterface {
 
     void setPrimaryClip(ClipData clip, String callingPackage);
 
+    void setPrimaryClip(ClipData clip, String callingPackage, int userId);
+
     void clearPrimaryClip(String callingPackage);
 
     ClipData getPrimaryClip(String pkg);
