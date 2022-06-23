@@ -210,7 +210,26 @@ public class MonkeySource implements MonkeyEventSource {
         // key up 82
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
             if (command.size() == 3) {
-                int keyCode = getKeyCode(command.get(2));
+                // CTRL SHIFT ALT META
+                String keyString = command.get(2);
+                int metaState = 0;
+                if (keyString.length() > 3 && keyString.contains("+")) {
+                    String[] arr = keyString.split("\\+");
+                    for (String item : arr) {
+                        if ("CTRL".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_CTRL_ON;
+                        } else if ("SHIFT".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_SHIFT_ON;
+                        } else if ("ALT".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_ALT_ON;
+                        } else if ("META".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_META_ON;
+                        } else {
+                            keyString = item;
+                        }
+                    }
+                }
+                int keyCode = getKeyCode(keyString);
                 if (keyCode < 0) {
                     // Ok, you gave us something bad.
                     Log.e(TAG, "Can't find keyname: " + command.get(2));
@@ -227,7 +246,8 @@ public class MonkeySource implements MonkeyEventSource {
                     Log.e(TAG, "got unknown action.");
                     return EARG;
                 }
-                queue.enqueueEvent(new MonkeyKeyEvent(action, keyCode));
+                queue.enqueueEvent(
+                        new MonkeyKeyEvent(-1, -1, action, keyCode, 0, metaState, KeyCharacterMap.VIRTUAL_KEYBOARD, 0));
                 return OK;
             }
             return EARG;
@@ -562,15 +582,37 @@ public class MonkeySource implements MonkeyEventSource {
         // press keycode
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
             if (command.size() == 2) {
-                int keyCode = getKeyCode(command.get(1));
+
+                String keyString = command.get(1);
+                int metaState = 0;
+                if (keyString.length() > 3 && keyString.contains("+")) {
+                    String[] arr = keyString.split("\\+");
+                    for (String item : arr) {
+                        if ("CTRL".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_CTRL_ON;
+                        } else if ("SHIFT".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_SHIFT_ON;
+                        } else if ("ALT".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_ALT_ON;
+                        } else if ("META".equals(item.toUpperCase())) {
+                            metaState |= KeyEvent.META_META_ON;
+                        } else {
+                            keyString = item;
+                        }
+                    }
+                }
+                int keyCode = getKeyCode(keyString);
+
                 if (keyCode < 0) {
                     // Ok, you gave us something bad.
                     Log.e(TAG, "Can't find keyname: " + command.get(1));
                     return EARG;
                 }
 
-                queue.enqueueEvent(new MonkeyKeyEvent(KeyEvent.ACTION_DOWN, keyCode));
-                queue.enqueueEvent(new MonkeyKeyEvent(KeyEvent.ACTION_UP, keyCode));
+                queue.enqueueEvent(new MonkeyKeyEvent(-1, -1, KeyEvent.ACTION_DOWN, keyCode, 0, metaState,
+                        KeyCharacterMap.VIRTUAL_KEYBOARD, 0));
+                queue.enqueueEvent(new MonkeyKeyEvent(-1, -1, KeyEvent.ACTION_UP, keyCode, 0, metaState,
+                        KeyCharacterMap.VIRTUAL_KEYBOARD, 0));
                 return OK;
 
             }

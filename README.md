@@ -89,11 +89,14 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
 - 获取界面是否有更新
 
 #### 功能使用示例
-- 模拟按键事件
+- 模拟按键事件 [KEYCODE](https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/java/android/view/KeyEvent.java)
     - `press KEYCODE_ENTER`
     - `press KEYCODE_PASTE`
     - `press KEYCODE_UP`
     - `press KEYCODE_DOWN`
+    - `press CTRL+A`
+    - `press CTRL+SHIFT+X`
+    - `press CTRL+SHIFT+ALT+V`
     - `key down POWER`
     - `key up POWER`
 - 模拟屏幕触摸事件
