@@ -212,9 +212,11 @@ public abstract class IOWrapper {
                                     String hostAddress = address.getHostAddress();
                                     Logger.out.println("new client connect : " + hostAddress);
                                     if (hostAddress == null) {
+                                        socket.close();
                                         continue;
                                     }
                                     if (!hostAddress.matches(args.allowIpAddress())) {
+                                        socket.close();
                                         continue;
                                     }
 
@@ -270,9 +272,11 @@ public abstract class IOWrapper {
                                         String hostAddress = address.getHostAddress();
                                         Logger.out.println("new client connect : " + hostAddress);
                                         if (hostAddress == null) {
+                                            socket.close();
                                             continue;
                                         }
                                         if (!hostAddress.matches(args.allowIpAddress())) {
+                                            socket.close();
                                             continue;
                                         }
                                         InputStream input = socket.getInputStream();
