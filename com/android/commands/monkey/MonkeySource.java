@@ -15,7 +15,14 @@
  */
 package com.android.commands.monkey;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -54,6 +61,36 @@ public class MonkeySource implements MonkeyEventSource {
     private static final String TAG = "MonkeyStub";
     /* The version of the monkey shell protocol */
     public static final int MONKEY_SHELL_VERSION = 1;
+
+    // This maps from command names to command implementations.
+    private static final Map<String, MonkeyCommand> COMMAND_MAP = new HashMap<String, MonkeyCommand>();
+
+    static {
+        // Add in all the commands we support
+        COMMAND_MAP.put("flip", new FlipCommand());
+        COMMAND_MAP.put("touch", new TouchCommand());
+        COMMAND_MAP.put("trackball", new TrackballCommand());
+        COMMAND_MAP.put("key", new KeyCommand());
+        COMMAND_MAP.put("sleep", new SleepCommand());
+        COMMAND_MAP.put("wake", new WakeCommand());
+        COMMAND_MAP.put("tap", new TapCommand());
+        COMMAND_MAP.put("press", new PressCommand());
+        COMMAND_MAP.put("type", new TypeCommand());
+        COMMAND_MAP.put("copy", new CopyCommand());
+        COMMAND_MAP.put("slide", new SlideCommand());
+        COMMAND_MAP.put("listvar", new MonkeySourceVars.ListVarCommand());
+        COMMAND_MAP.put("getvar", new MonkeySourceVars.GetVarCommand());
+        COMMAND_MAP.put("queryview", new MonkeySourceViews.QueryViewCommand());
+        COMMAND_MAP.put("getrootview", new MonkeySourceViews.GetRootViewCommand());
+        COMMAND_MAP.put("getisviewchange", new MonkeySourceViews.GetIsChangeCommand());
+        COMMAND_MAP.put("getviewswithtext", new MonkeySourceViews.GetViewsWithTextCommand());
+        COMMAND_MAP.put("takescreenshot", new MonkeySourceViews.TakeScreenshot());
+        COMMAND_MAP.put("echo", new EchoCommand());
+        COMMAND_MAP.put("gettopactivity", new GetTopActivityCommand());
+        COMMAND_MAP.put("play", new PlayAudioCommand());
+        COMMAND_MAP.put("help", new HelpCommand());
+        COMMAND_MAP.put("download", new DownloadCommand());
+    }
 
     /**
      * ReturnValue from the MonkeyCommand that indicates whether the command was
@@ -534,6 +571,64 @@ public class MonkeySource implements MonkeyEventSource {
     }
 
     /**
+     * Command Download
+     */
+    private static class DownloadCommand implements MonkeyCommand {
+
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            try {
+
+                String url = command.get(1);
+                String name = command.get(2);
+
+                File outFile = new File(name);
+                if (!name.startsWith("/")) {
+                    outFile = new File("/data/local/tmp/" + name);
+                }
+                Log.d(TAG, "outfile:" + outFile.getAbsolutePath());
+                if (outFile.exists()) {
+                    outFile.delete();
+                }
+                OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outFile, false));
+                HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                connection.connect();
+                InputStream inputStream = connection.getInputStream();
+
+                byte[] buffer = new byte[4096];
+                int len;
+                long size = 0;
+                long time = System.currentTimeMillis();
+                while ((len = inputStream.read(buffer)) > 0) {
+                    outputStream.write(buffer, 0, len);
+                    size += len;
+                    if (System.currentTimeMillis() - time > 1000) {
+                        time = System.currentTimeMillis();
+                        System.out.println("download size:" + formatSize(size));
+                    }
+                }
+                outputStream.flush();
+                outputStream.close();
+                inputStream.close();
+
+                return new MonkeyCommandReturn(true, outFile.getAbsolutePath());
+            } catch (Exception e) {
+                return new MonkeyCommandReturn(false, e.getMessage() + "\n" + Log.getStackTraceString(e));
+            }
+        }
+
+        String formatSize(double size) {
+            String[] companys = "B KB MB GB TB".split(" ");
+            double cur = size;
+            int index = 0;
+            while (cur > 1024) {
+                index++;
+                cur /= 1024;
+            }
+            return ((long) (cur * 100)) / 100f + companys[index];
+        }
+    }
+
+    /**
      * Command to wake the device up
      */
     private static class WakeCommand implements MonkeyCommand {
@@ -643,35 +738,6 @@ public class MonkeySource implements MonkeyEventSource {
             }
         }
         return true;
-    }
-
-    // This maps from command names to command implementations.
-    private static final Map<String, MonkeyCommand> COMMAND_MAP = new HashMap<String, MonkeyCommand>();
-
-    static {
-        // Add in all the commands we support
-        COMMAND_MAP.put("flip", new FlipCommand());
-        COMMAND_MAP.put("touch", new TouchCommand());
-        COMMAND_MAP.put("trackball", new TrackballCommand());
-        COMMAND_MAP.put("key", new KeyCommand());
-        COMMAND_MAP.put("sleep", new SleepCommand());
-        COMMAND_MAP.put("wake", new WakeCommand());
-        COMMAND_MAP.put("tap", new TapCommand());
-        COMMAND_MAP.put("press", new PressCommand());
-        COMMAND_MAP.put("type", new TypeCommand());
-        COMMAND_MAP.put("copy", new CopyCommand());
-        COMMAND_MAP.put("slide", new SlideCommand());
-        COMMAND_MAP.put("listvar", new MonkeySourceVars.ListVarCommand());
-        COMMAND_MAP.put("getvar", new MonkeySourceVars.GetVarCommand());
-        COMMAND_MAP.put("queryview", new MonkeySourceViews.QueryViewCommand());
-        COMMAND_MAP.put("getrootview", new MonkeySourceViews.GetRootViewCommand());
-        COMMAND_MAP.put("getisviewchange", new MonkeySourceViews.GetIsChangeCommand());
-        COMMAND_MAP.put("getviewswithtext", new MonkeySourceViews.GetViewsWithTextCommand());
-        COMMAND_MAP.put("takescreenshot", new MonkeySourceViews.TakeScreenshot());
-        COMMAND_MAP.put("echo", new EchoCommand());
-        COMMAND_MAP.put("gettopactivity", new GetTopActivityCommand());
-        COMMAND_MAP.put("play", new PlayAudioCommand());
-        COMMAND_MAP.put("help", new HelpCommand());
     }
 
     // QUIT command

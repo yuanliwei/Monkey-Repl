@@ -124,7 +124,7 @@ public class Monkey {
     private int run(Argument args) {
 
         if ("repl".equals(args.type())) {
-            Logger.out.println(MonkeyUtils.getHelp());
+            // Logger.out.println(MonkeyUtils.getHelp());
         }
 
         if (!getSystemInterfaces()) {
