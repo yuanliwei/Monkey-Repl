@@ -314,7 +314,15 @@ public class MonkeySource implements MonkeyEventSource {
                 keyCode = KeyEvent.keyCodeFromString("KEYCODE_" + keyName.toUpperCase());
                 if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
                     // Still unknown
-                    return -1;
+                    keyCode = KeyEvent.keyCodeFromString("KEYCODE_DPAD_" + keyName.toUpperCase());
+                    if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
+                        // Still unknown
+                        keyCode = KeyEvent.keyCodeFromString("KEYCODE_MEDIA_" + keyName.toUpperCase());
+                        if (keyCode == KeyEvent.KEYCODE_UNKNOWN) {
+                            // Still unknown
+                            return -1;
+                        }
+                    }
                 }
             }
         }
