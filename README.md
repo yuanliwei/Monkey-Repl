@@ -100,6 +100,20 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
     - 用于在脚本中同步操作
 - 获取界面是否有更新
 - 下载文件
+- 文件操作
+    - 读文件（base64）
+    - 写文件（base64）
+    - 删除文件
+    - 列目录
+    - 创建目录
+    - 判断路径存在
+- wifi 网络控制（JSON 参数）
+    - 开关 WiFi
+    - 查看当前网络信息
+    - 列出已配置网络
+    - 设置静态 IP / DHCP
+    - 连接 / 断开 / 忘记网络
+
 
 #### 功能使用示例
 - 模拟按键事件 [KEYCODE](https://github.com/aosp-mirror/platform_frameworks_base/blob/master/core/java/android/view/KeyEvent.java)
@@ -237,4 +251,23 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
     - `download http://example.com/a.txt a.txt`
 - 退出
     - `quit`
+- 文件操作
+    - 读文件（返回 base64）：`readfile /data/local/tmp/a.txt`
+    - 写文件（内容 base64）：`writefile /data/local/tmp/a.txt aGVsbG8=`
+    - 删除文件：`deletefile /data/local/tmp/a.txt`
+    - 列目录（返回 JSON 数组）：`listdir /data/local/tmp`
+    - 创建目录：`mkdir /data/local/tmp/mydir`
+    - 判断存在：`exists /data/local/tmp/a.txt` > `OK:true`
+- wifi 网络控制（JSON 参数，调 framework API）
+    - 开/关 WiFi：`wifi {"action":"on"}` / `wifi {"action":"off"}`
+    - 当前网络信息：`wifi {"action":"info"}` > `{"ssid":..,"ip":..,"gateway":..,"dns1":..}`
+    - 已配置网络列表：`wifi {"action":"list"}`
+    - 设置静态 IP：`wifi {"action":"setStatic","ssid":"MyWifi","ip":"192.168.1.100","prefix":24,"gateway":"192.168.1.1","dns":["8.8.8.8"]}`
+    - 切换 DHCP：`wifi {"action":"setDhcp","ssid":"MyWifi"}`
+    - 连接网络：`wifi {"action":"connect","ssid":"MyWifi"}`
+    - 断开：`wifi {"action":"disconnect"}`
+    - 忘记网络：`wifi {"action":"forget","networkId":13}`
+    - 启用/禁用：`wifi {"action":"enable","networkId":13}` / `wifi {"action":"disable","networkId":13}`
+    - 新建/保存：`wifi {"action":"save","ssid":"MyWifi","password":"12345678"}`
+
 
