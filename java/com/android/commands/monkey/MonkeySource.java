@@ -100,6 +100,10 @@ public class MonkeySource implements MonkeyEventSource {
         COMMAND_MAP.put("exists", new ExistsCommand());
         COMMAND_MAP.put("wifi", new WifiCommand());
         COMMAND_MAP.put("bluetooth", new BluetoothCommand());
+        COMMAND_MAP.put("power", new PowerCommand());
+        COMMAND_MAP.put("audio", new AudioCommand());
+        COMMAND_MAP.put("wait", new WaitCommand());
+        COMMAND_MAP.put("clipboard", new ClipboardCommand());
     }
 
     /**
@@ -1045,6 +1049,38 @@ public class MonkeySource implements MonkeyEventSource {
         // bluetooth <json>
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
             return com.android.commands.monkey.BluetoothCommand.execute(command);
+        }
+    }
+
+    /** power 命令（JSON 参数，调 framework API） */
+    private static class PowerCommand implements MonkeyCommand {
+        // power <json>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return com.android.commands.monkey.PowerCommand.execute(command);
+        }
+    }
+
+    /** audio 命令（JSON 参数，调 framework API） */
+    private static class AudioCommand implements MonkeyCommand {
+        // audio <json>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return com.android.commands.monkey.AudioCommand.execute(command);
+        }
+    }
+
+    /** wait 命令（JSON 参数，轮询等待条件） */
+    private static class WaitCommand implements MonkeyCommand {
+        // wait <json>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return com.android.commands.monkey.WaitCommand.execute(command);
+        }
+    }
+
+    /** clipboard 命令（JSON 参数，调 framework API） */
+    private static class ClipboardCommand implements MonkeyCommand {
+        // clipboard <json>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return com.android.commands.monkey.ClipboardCommand.execute(command);
         }
     }
 }

@@ -17,3 +17,7 @@ java/com/android/commands/monkey/MonkeyTrackballEvent.java
 java/com/android/commands/monkey/MonkeyUtils.java
 java/com/android/commands/monkey/MonkeyViewException.java
 java/com/android/commands/monkey/BluetoothCommand.java
+java/com/android/commands/monkey/PowerCommand.java
+java/com/android/commands/monkey/AudioCommand.java
+java/com/android/commands/monkey/WaitCommand.java
+java/com/android/commands/monkey/ClipboardCommand.java

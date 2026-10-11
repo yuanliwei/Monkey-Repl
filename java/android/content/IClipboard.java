@@ -26,6 +26,8 @@ public interface IClipboard extends android.os.IInterface {
 
     ClipData getPrimaryClip(String pkg);
 
+    ClipData getPrimaryClip(String callingPackage, String attributionTag, String featureId, String opPackageName, int userId, int deviceId, boolean isUserFocused);
+
     ClipDescription getPrimaryClipDescription(String callingPackage);
 
     boolean hasPrimaryClip(String callingPackage);
@@ -38,5 +40,7 @@ public interface IClipboard extends android.os.IInterface {
      * Returns true if the clipboard contains text; false otherwise.
      */
     boolean hasClipboardText(String callingPackage);
+
+    boolean hasClipboardText(String callingPackage, String attributionTag, int userId, int deviceId);
 
 }

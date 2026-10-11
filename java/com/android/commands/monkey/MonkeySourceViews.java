@@ -698,4 +698,9 @@ public class MonkeySourceViews {
             return EARG;
         }
     }
+
+    /** 获取当前活动窗口根节点（供 wait 命令使用） */
+    public static AccessibilityNodeInfo getActiveRoot() {
+        return sUiTestAutomationBridge == null ? null : sUiTestAutomationBridge.getRootInActiveWindow();
+    }
 }

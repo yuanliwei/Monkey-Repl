@@ -21,4 +21,16 @@ public interface IPowerManager extends android.os.IInterface {
     void wakeUp(long time) throws RemoteException;
     void wakeUp(long time, String reason, String opPackageName) throws RemoteException;
     void wakeUp(long time, int reason, String details, String opPackageName);
+
+    void reboot(boolean confirm, String reason, boolean wait) throws RemoteException;
+
+    void goToSleep(long time, int reason, int flags) throws RemoteException;
+
+    void nap(long time) throws RemoteException;
+
+    boolean isInteractive() throws RemoteException;
+
+    boolean isPowerSaveMode() throws RemoteException;
+
+    int getLastShutdownReason() throws RemoteException;
 }
