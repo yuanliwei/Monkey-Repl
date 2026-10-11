@@ -16,7 +16,6 @@ import android.net.StaticIpConfiguration;
 import android.net.wifi.IWifiManager;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
-import android.os.Bundle;
 import android.os.ServiceManager;
 
 import com.android.wifi.x.com.android.modules.utils.ParceledListSlice;
@@ -115,7 +114,7 @@ public class NetworkCommand {
     }
 
     static MonkeySource.MonkeyCommandReturn list(IWifiManager wifi) throws Exception {
-        ParceledListSlice slice = wifi.getConfiguredNetworks(PKG, null, false);
+        ParceledListSlice<WifiConfiguration> slice = wifi.getConfiguredNetworks(PKG, null, false);
         List<?> configs = slice == null ? new ArrayList<>() : slice.getList();
         JSONArray arr = new JSONArray();
         for (Object obj : configs) {
@@ -192,7 +191,7 @@ public class NetworkCommand {
     /** 找已配置网络（按 SSID），没有则新建 */
     static WifiConfiguration findOrCreate(IWifiManager wifi, String ssid) throws Exception {
         String quoted = "\"" + ssid + "\"";
-        ParceledListSlice slice = wifi.getConfiguredNetworks(PKG, null, false);
+        ParceledListSlice<WifiConfiguration> slice = wifi.getConfiguredNetworks(PKG, null, false);
         if (slice != null) {
             for (Object obj : slice.getList()) {
                 WifiConfiguration c = (WifiConfiguration) obj;

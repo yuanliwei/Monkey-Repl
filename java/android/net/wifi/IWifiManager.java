@@ -27,7 +27,7 @@ public interface IWifiManager extends IInterface {
 
     int addOrUpdateNetwork(WifiConfiguration config, String packageName, Bundle bundle);
 
-    ParceledListSlice getConfiguredNetworks(String packageName, String featureId, boolean flag);
+    ParceledListSlice<WifiConfiguration> getConfiguredNetworks(String packageName, String featureId, boolean flag);
 
     boolean setWifiEnabled(String packageName, boolean enable);
 

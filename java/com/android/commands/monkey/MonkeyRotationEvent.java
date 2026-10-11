@@ -17,7 +17,6 @@
 package com.android.commands.monkey;
 
 import android.app.IActivityManager;
-import android.os.RemoteException;
 import android.view.IWindowManager;
 /**
  * monkey screen rotation event
