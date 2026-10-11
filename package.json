@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改自 [Android monkey](https://android.googlesource.com/platform/development/+/refs/heads/master/cmds/monkey)。",
   "main": "node/lib.js",
+  "engines": {
+    "node": ">=24.0.0"
+  },
   "scripts": {
     "test": "node --test node/lib.test.js",
     "build": "node node/build.js",

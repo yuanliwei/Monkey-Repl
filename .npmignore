@@ -9,6 +9,7 @@ node/lib.test.js
 jsconfig.json
 .gitignore
 .git/
+.vscode/
 *.class
 android.jar
 build/

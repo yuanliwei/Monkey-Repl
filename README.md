@@ -1,7 +1,27 @@
 # monkey-repl
 
-#### 描述
-monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改自 [Android monkey](https://android.googlesource.com/platform/development/+/refs/heads/master/cmds/monkey)。
+通过 USB 控制 Android 设备的自动化工具，修改自 [Android monkey](https://android.googlesource.com/platform/development/+/refs/heads/master/cmds/monkey)。
+
+无需 root，以 shell uid(2000) 运行（`app_process` 执行 jar）。
+
+#### 安装
+- `npm install monkey-repl`
+- 依赖：Node >= 24、已连接且开启 USB 调试的 Android 设备
+
+#### 快速上手
+```js
+import { Controller } from 'monkey-repl'
+
+await using controller = new Controller()
+await controller.connect()
+
+let tree = await controller.getVisibleViewTree()
+await controller.clickText(tree, '便签')
+
+let result = await controller.svc('display', 'info')
+console.log(JSON.parse(result.data).logicalWidth)
+```
+`await using` 在作用域结束时自动 `quit()` 并释放连接（也可用 `using` 同步释放）。
 
 #### 特性
 - 不需要 `root` 权限
@@ -14,34 +34,19 @@ monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改�
 - 可以获取 `webview` 中的控件
 - 播放音频
 
-
-#### 构建
-- `npm install` 安装依赖
-- `npm run build` 编译打包，产物 `resource/monkey_repl.jar`
-- 依赖 JDK 21 + Android SDK build-tools（默认 36.1.0，可用 `BUILD_TOOLS_DIR` 环境变量指定）
-
-#### 目录结构
-- `java/` Java 源码（`com/` 为核心，`android/`/`dalvik/`/`org/` 为 stub）
-- `node/` Node 脚本（`build.js` 编译、`lib.js` 客户端、`lib.test.js` 测试）
-- `resource/` 资源（`monkey_repl.jar`、`MANIFEST.MF`、`source_list`）
-- `dist/` 构建产物
-
 #### 使用方式
 - 使用 usb 连接手机
 - 打开手机的 usb 调试模式
-- 通过 `node/lib.js` 的 `Controller` 连接设备（自动推送 jar 到 `/data/local/tmp/monkey_repl.jar`）
-- 输入 `queryview getlocation` 按 `enter`
-- 输入 `queryview gettree text` 按 `enter`
-- 退出 `quit` 按 `enter`
+- 通过 `Controller` 连接设备（自动推送 jar 到 `/data/local/tmp/monkey_repl.jar`）
 
-**启动参数**
+#### 启动参数
 ```
-monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_ip_address 192.168.0.123 --query_view true --activity_controller true
-    --type                : [repl|network]  default : repl
-    --command_type        : [text|json]     default : text
+monkey-repl --type repl --command_type json --name abc-repl --port 5678 --allow_ip_address 192.168.0.123 --query_view true --activity_controller true
+    --type                : [repl|tcp]      default : repl
+    --command_type        : [text|json]     default : json
     --name                : string          default : monkey-repl
     --port                : number          default : 5678
-    --allow_ip_address    : string          default : all
+    --allow_ip_address    : string          default : 192\.168\..*（192.168 网段）
     --query_view          : boolean         default : true
     --activity_controller : boolean         default : true
 ```
@@ -290,17 +295,39 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
 
 #### 系统服务命令（framework API）
 
-基于 `ServiceManager` + `IXxx.Stub.asInterface` 的 Binder 底座（无需 Context）：
+基于 `ServiceManager` + `IXxx.Stub.asInterface` 的 Binder 底座（无需 Context）。命令格式 `服务名 {"action":...}`。wifi / bluetooth 的完整命令见上方「功能使用示例」。
 
-- **wifi** 网络（开关/信息/列表/静态IP/DHCP/连接）
-- **bluetooth** 蓝牙（开关/信息/扫描/已配对设备/配对状态）
-- **power** 电源（重启/锁屏/唤醒/亮屏状态/省电模式）
-- **audio** 音量（各 stream 获取/设置/调节/静音/铃声模式）
-- **net** 网络（连接状态/类型/计量/飞行模式）
-- **clipboard** 剪贴板（读取/是否有/清除）
-- **notification** 通知（是否启用/清除；列表受权限限制，用 shell+dumpsys）
-- **display** 显示（亮度/分辨率/DPI/旋转）
-- **wait** 等待条件（Activity/控件文本/控件id 出现或消失，带超时）
+**power** 电源
+- 是否亮屏：`power {"action":"interactive"}` > `true`
+- 锁屏/唤醒：`power {"action":"screenoff"}` / `power {"action":"wakeup"}`
+- 重启：`power {"action":"reboot"}`
+
+**audio** 音量（stream: voice/system/ring/music/alarm/notification/bluetooth/dtmf/accessibility）
+- 获取/设置：`audio {"action":"get","stream":"music"}` / `audio {"action":"set","stream":"music","volume":50}`
+- 调节/最大/最小：`audio {"action":"adjust","stream":"music","direction":1}` / `{"action":"max","stream":"music"}`
+- 静音/铃声模式：`audio {"action":"mute","stream":"music","mute":true}` / `{"action":"ringermode"}`
+
+**net** 网络
+- 信息：`net {"action":"info"}`
+- 是否计量/飞行模式：`net {"action":"metered"}` / `{"action":"airplane"}`
+
+**clipboard** 剪贴板
+- 是否有内容/读取/清除：`clipboard {"action":"has"}` / `{"action":"get"}` / `{"action":"clear"}`
+
+**notification** 通知
+- 是否启用：`notification {"action":"enabled"}` > `true`
+- 清除全部：`notification {"action":"cancelall"}`
+- 注：列表需 ACCESS_NOTIFICATIONS 权限（shell 无），改用 `shell {"cmd":"dumpsys notification --noredact"}`
+
+**display** 显示
+- 信息（分辨率/DPI）：`display {"action":"info"}`
+- 亮度/设置亮度：`display {"action":"brightness"}` / `{"action":"setbrightness","brightness":0.5}`
+- 旋转/解冻：`display {"action":"rotate","rotation":1}` / `{"action":"unfreeze"}`
+
+**wait** 等待条件（服务端轮询，带超时）
+- 等 Activity：`wait {"action":"activity","activity":"launcher"}`
+- 等控件文本/id：`wait {"action":"view","text":"确定"}` / `wait {"action":"id","id":"android:id/button1"}`
+- 等消失：加 `"gone":true`；超时 `"timeout":5000`
 
 #### 通用执行命令
 
@@ -323,6 +350,14 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
 - **录屏**：`shell {"cmd":"screenrecord --time-limit 10 /sdcard/a.mp4"}`
 - **安装/卸载 APK**：`shell {"cmd":"pm install /data/local/tmp/a.apk"}` / `pm uninstall <pkg>`
 
-#### 架构考虑
+#### 构建
+- `npm install` 安装依赖
+- `npm run build` 编译打包，产物 `dist/monkey_repl.jar`
+- `npm run copy-jar` 把产物同步到 `resource/monkey_repl.jar`（发布用）
+- 依赖 JDK 21 + Android SDK build-tools（默认 36.1.0，可用 `BUILD_TOOLS_DIR` 环境变量指定）
 
-系统服务命令增多后，可评估是否统一为 `service {"name":"power","action":...}` 形式（当前每服务独立命令）。
+#### 目录结构
+- `java/` Java 源码（`com/` 为核心，`android/`/`dalvik/`/`org/` 为 stub）
+- `node/` Node 脚本（`build.js` 编译、`lib.js` 客户端、`lib.test.js` 测试）
+- `resource/` 资源（`monkey_repl.jar`、`MANIFEST.MF`、`source_list`）
+- `dist/` 构建产物
