@@ -113,6 +113,12 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
     - 列出已配置网络
     - 设置静态 IP / DHCP
     - 连接 / 断开 / 忘记网络
+- 蓝牙控制（JSON 参数）
+    - 开关蓝牙
+    - 查看状态/信息
+    - 扫描设备
+    - 已配对设备列表
+    - 设备操作（查询状态/连接/取消配对/删除配对）
 
 
 #### 功能使用示例
@@ -269,5 +275,15 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
     - 忘记网络：`wifi {"action":"forget","networkId":13}`
     - 启用/禁用：`wifi {"action":"enable","networkId":13}` / `wifi {"action":"disable","networkId":13}`
     - 新建/保存：`wifi {"action":"save","ssid":"MyWifi","password":"12345678"}`
+
+- 蓝牙控制（JSON 参数，调 framework API）
+    - 开关：`bluetooth {"action":"on"}` / `bluetooth {"action":"off"}`
+    - 状态：`bluetooth {"action":"state"}` > `ON`
+    - 信息：`bluetooth {"action":"info"}` > `{"state":..,"address":..,"name":..}`
+    - 开始/停止扫描：`bluetooth {"action":"scan","enable":true}` / `bluetooth {"action":"scan","enable":false}`
+    - 是否扫描中：`bluetooth {"action":"scanning"}` > `true`
+    - 已配对设备列表：`bluetooth {"action":"devices"}`
+    - 设备操作：`bluetooth {"action":"bond","op":"state","address":"AA:BB:CC:DD:EE:FF"}`（op: state/connect/remove/cancel）
+    - 注：配对新设备（op=create）在 app_process 下不可用（BluetoothDevice 构造为 hidden API）
 
 

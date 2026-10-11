@@ -99,6 +99,7 @@ public class MonkeySource implements MonkeyEventSource {
         COMMAND_MAP.put("mkdir", new MkdirCommand());
         COMMAND_MAP.put("exists", new ExistsCommand());
         COMMAND_MAP.put("wifi", new WifiCommand());
+        COMMAND_MAP.put("bluetooth", new BluetoothCommand());
     }
 
     /**
@@ -913,8 +914,9 @@ public class MonkeySource implements MonkeyEventSource {
 
                 Command command = ioWrapper.readCommand();
 
-                if (command == null) {
-                    continue;
+                if (command == null || command.data == null) {
+                    // 输入流结束（EOF），退出主循环
+                    return null;
                 }
 
                 // Do quit checking here
@@ -1035,6 +1037,14 @@ public class MonkeySource implements MonkeyEventSource {
         // wifi <json>
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
             return NetworkCommand.execute(command);
+        }
+    }
+
+    /** bluetooth 命令（JSON 参数，调 framework API） */
+    private static class BluetoothCommand implements MonkeyCommand {
+        // bluetooth <json>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return com.android.commands.monkey.BluetoothCommand.execute(command);
         }
     }
 }

@@ -94,10 +94,11 @@ public abstract class IOWrapper {
                     new Thread() {
                         @Override
                         public void run() {
-                            try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-                                    PrintWriter output = new PrintWriter(System.out, true)) {
+                            PrintWriter output = new PrintWriter(System.out, true);
+                            try (BufferedReader input = new BufferedReader(new InputStreamReader(System.in))) {
                                 while (true) {
                                     String line = input.readLine();
+                                    if (line == null) { queue.add(new Command()); break; }
                                     Command command = parseCommand(line);
                                     command.send = new Consumer<String>() {
                                         @Override
@@ -153,6 +154,7 @@ public abstract class IOWrapper {
                                                             true)) {
                                                 while (true) {
                                                     String line = input.readLine();
+                                                    if (line == null) { queue.add(new Command()); break; }
                                                     Command command = parseCommand(line);
                                                     command.send = new Consumer<String>() {
                                                         @Override
