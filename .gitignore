@@ -3,3 +3,4 @@ android.jar
 build/
 dist/
 node_modules/
+resource/monkey_repl.jar

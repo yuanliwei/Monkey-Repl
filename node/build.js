@@ -30,7 +30,7 @@ const javaBuildJar = path.join(distDir, 'java_build.jar')
 /** 生成的 dex */
 const classesDex = path.join(distDir, 'classes.dex')
 /** 最终产物 jar */
-const monkeyReplJar = path.join(resourceDir, 'monkey_repl.jar')
+const monkeyReplJar = path.join(distDir, 'monkey_repl.jar')
 /** 源文件列表 */
 const sourceList = path.join(resourceDir, 'source_list')
 /** manifest */

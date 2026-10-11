@@ -1,5 +1,6 @@
 import { spawn, execSync } from 'child_process'
 import { fileURLToPath } from 'node:url'
+import { existsSync } from 'node:fs'
 
 /**
  * @import {ViewTree, Options, MatchCallback, ExecResult} from './types.js'
@@ -41,14 +42,16 @@ export class Controller {
             let device = devices.shift()
             // 推送 monkey_repl.jar 到设备
             if (!this.options.skipPush) {
-                const jarPath = fileURLToPath(new URL('../resource/monkey_repl.jar', import.meta.url))
+                const distJar = fileURLToPath(new URL('../dist/monkey_repl.jar', import.meta.url))
+                const resourceJar = fileURLToPath(new URL('../resource/monkey_repl.jar', import.meta.url))
+                const jarPath = existsSync(distJar) ? distJar : resourceJar
                 execSync(`adb -s ${device} push "${jarPath}" /data/local/tmp/monkey_repl.jar`)
             }
             const queryCallbackMap = {}
             const shell = spawn(`adb`, [`-s`, `${device}`, `shell`])
             shell.stderr.setEncoding('utf-8')
             shell.stdout.setEncoding('utf-8')
-            shell.stderr.on('data', (chunk) => { console.log('err', chunk) })
+            shell.stderr.on('data', (chunk) => { if (this.options.debug) console.error('err', chunk) })
             // shell.stdin.on('error', (chunk) => { console.error('error', chunk) })
             // shell.stdout.on('error', (chunk) => { console.error('error', chunk) })
             // shell.stderr.on('error', (chunk) => { console.error('error', chunk) })
@@ -59,29 +62,24 @@ export class Controller {
             shell.stdin.write(`export CLASSPATH=/data/local/tmp/monkey_repl.jar\n`)
             shell.stdin.write(`exec app_process /system/bin com.android.commands.monkey.Monkey --type ${type} --command_type ${command_type} --name ${name} --port ${port} --allow_ip_address ${allow_ip_address} --query_view ${query_view} --activity_controller ${activity_controller}\n`)
 
-            let chunks = []
+            let buffer = ''
             shell.stdout.on('data', (chunk) => {
-                // console.log('on data chunk:', chunk.length)
-                // console.log('on data chunk:', '|' + chunk + '|')
-                if (queryCallbackMap.length == 0) return
-                chunk = chunk.split('\n').map(o => o.trim()).filter(o => chunks.length > 0 || o.startsWith('{'))[0]
-                if (!chunk) return
-                if (chunks.length > 0 || chunk.startsWith("{")) {
-                    chunks.push(chunk)
-                }
-                try {
-                    let o = JSON.parse(chunks.join(''))
-                    chunks = []
-                    if (o.id) {
+                buffer += chunk
+                let lines = buffer.split('\n')
+                buffer = lines.pop()  // 最后一段可能不完整，留到下个 chunk
+                for (const line of lines) {
+                    let text = line.trim()
+                    if (!text) continue
+                    try {
+                        let o = JSON.parse(text)
                         let promiseResolve = queryCallbackMap[o.id]
                         if (promiseResolve) {
                             promiseResolve(o)
                             delete queryCallbackMap[o.id]
                         }
+                    } catch (error) {
+                        // 非 JSON 行（日志残留等）忽略
                     }
-                } catch (error) {
-                    // console.log(chunk)
-                    // console.error(error)
                 }
             })
 

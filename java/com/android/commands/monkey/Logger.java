@@ -25,6 +25,8 @@ public abstract class Logger {
         public void println(String s) {
             if (stdout) {
                 System.out.println(s);
+            } else {
+                System.err.println(s);
             }
             if (logcat) {
                 Log.i(TAG, s);

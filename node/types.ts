@@ -43,6 +43,8 @@ export type Options = {
     activity_controller?: boolean;
     /** default : false，跳过推送 jar */
     skipPush?: boolean;
+    /** default : false，打印 stderr 调试日志 */
+    debug?: boolean;
 }
 
 /** exec 命令返回结果 */

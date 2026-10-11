@@ -109,6 +109,13 @@ public class Monkey {
 
     public static void main(String[] args_) {
         // Set the process name showing in "ps" or "top"
+        // json 模式下关闭 stdout 日志，保证 stdout 为纯协议（日志改走 stderr）
+        for (int i = 0; i < args_.length - 1; i++) {
+            if ("--command_type".equals(args_[i]) && "json".equals(args_[i + 1])) {
+                Logger.stdout = false;
+                break;
+            }
+        }
         Argument args = new Argument(args_);
         Process.setArgV0(args.name());
         int resultCode = new Monkey().run(args);

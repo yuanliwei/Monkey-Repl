@@ -5,7 +5,8 @@
   "main": "node/lib.js",
   "scripts": {
     "test": "node --test node/lib.test.js",
-    "build": "node node/build.js"
+    "build": "node node/build.js",
+    "copy-jar": "node node/copy-jar.js"
   },
   "repository": {
     "type": "git",
