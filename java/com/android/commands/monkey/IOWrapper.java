@@ -1,30 +1,18 @@
 package com.android.commands.monkey;
 
 import java.io.BufferedReader;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.nio.charset.StandardCharsets;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import org.json.JSONObject;
 
 import com.android.commands.monkey.Monkey.Argument;
 
-import android.util.Log;
 
 public abstract class IOWrapper {
 
