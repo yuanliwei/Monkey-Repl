@@ -26,3 +26,4 @@ java/com/android/commands/monkey/ShellCommand.java
 java/com/android/commands/monkey/NotificationCommand.java
 java/com/android/commands/monkey/DisplayCommand.java
 java/com/android/commands/monkey/AppCommand.java
+java/com/android/commands/monkey/CmdCommand.java
