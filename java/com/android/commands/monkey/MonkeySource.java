@@ -18,6 +18,7 @@ package com.android.commands.monkey;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -32,6 +33,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Queue;
 import java.util.StringTokenizer;
+import org.json.JSONObject;
 
 import com.android.commands.monkey.IOWrapper.Command;
 
@@ -90,6 +92,12 @@ public class MonkeySource implements MonkeyEventSource {
         COMMAND_MAP.put("play", new PlayAudioCommand());
         COMMAND_MAP.put("help", new HelpCommand());
         COMMAND_MAP.put("download", new DownloadCommand());
+        COMMAND_MAP.put("readfile", new ReadFileCommand());
+        COMMAND_MAP.put("writefile", new WriteFileCommand());
+        COMMAND_MAP.put("deletefile", new DeleteFileCommand());
+        COMMAND_MAP.put("listdir", new ListDirCommand());
+        COMMAND_MAP.put("mkdir", new MkdirCommand());
+        COMMAND_MAP.put("exists", new ExistsCommand());
     }
 
     /**
@@ -939,5 +947,85 @@ public class MonkeySource implements MonkeyEventSource {
     @Override
     public boolean validate() {
         return true;
+    }
+
+    /** 读取文件，返回 base64 内容 */
+    private static class ReadFileCommand implements MonkeyCommand {
+        // readfile <path>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            if (command.size() != 2) return EARG;
+            try (FileInputStream in = new FileInputStream(command.get(1))) {
+                byte[] buf = new byte[in.available()];
+                in.read(buf);
+                return new MonkeyCommandReturn(true, Base64.encodeToString(buf, Base64.NO_WRAP));
+            } catch (Exception e) {
+                return new MonkeyCommandReturn(false, e.getMessage());
+            }
+        }
+    }
+
+    /** 写文件，内容 base64 */
+    private static class WriteFileCommand implements MonkeyCommand {
+        // writefile <path> <base64>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            if (command.size() != 3) return EARG;
+            try {
+                File f = new File(command.get(1));
+                if (f.getParentFile() != null) f.getParentFile().mkdirs();
+                try (FileOutputStream out = new FileOutputStream(f)) {
+                    out.write(Base64.decode(command.get(2), Base64.NO_WRAP));
+                }
+                return OK;
+            } catch (Exception e) {
+                return new MonkeyCommandReturn(false, e.getMessage());
+            }
+        }
+    }
+
+    /** 删除文件 */
+    private static class DeleteFileCommand implements MonkeyCommand {
+        // deletefile <path>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            if (command.size() != 2) return EARG;
+            File f = new File(command.get(1));
+            if (!f.exists()) return new MonkeyCommandReturn(false, "not exists");
+            return new MonkeyCommandReturn(f.delete(), null);
+        }
+    }
+
+    /** 列目录，返回 JSON 数组 */
+    private static class ListDirCommand implements MonkeyCommand {
+        // listdir <path>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            if (command.size() != 2) return EARG;
+            String[] names = new File(command.get(1)).list();
+            if (names == null) return new MonkeyCommandReturn(false, "not a directory");
+            StringBuilder sb = new StringBuilder("[");
+            for (int i = 0; i < names.length; i++) {
+                if (i > 0) sb.append(",");
+                sb.append(JSONObject.quote(names[i]));
+            }
+            sb.append("]");
+            return new MonkeyCommandReturn(true, sb.toString());
+        }
+    }
+
+    /** 创建目录 */
+    private static class MkdirCommand implements MonkeyCommand {
+        // mkdir <path>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            if (command.size() != 2) return EARG;
+            File f = new File(command.get(1));
+            return new MonkeyCommandReturn(f.exists() || f.mkdirs(), null);
+        }
+    }
+
+    /** 判断路径是否存在 */
+    private static class ExistsCommand implements MonkeyCommand {
+        // exists <path>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            if (command.size() != 2) return EARG;
+            return new MonkeyCommandReturn(true, String.valueOf(new File(command.get(1)).exists()));
+        }
     }
 }
