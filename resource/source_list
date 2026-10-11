@@ -21,3 +21,4 @@ java/com/android/commands/monkey/PowerCommand.java
 java/com/android/commands/monkey/AudioCommand.java
 java/com/android/commands/monkey/WaitCommand.java
 java/com/android/commands/monkey/ClipboardCommand.java
+java/com/android/commands/monkey/NetCommand.java
