@@ -109,6 +109,8 @@ public class Monkey {
 
     public static void main(String[] args_) {
         // Set the process name showing in "ps" or "top"
+        // app_process 下 main 线程无 Looper，UiAutomation 等需要 main Looper
+        android.os.Looper.prepareMainLooper();
         // json 模式下关闭 stdout 日志，保证 stdout 为纯协议（日志改走 stderr）
         for (int i = 0; i < args_.length - 1; i++) {
             if ("--command_type".equals(args_[i]) && "json".equals(args_[i + 1])) {

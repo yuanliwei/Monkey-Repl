@@ -1,7 +1,6 @@
 
 package android.os;
 
-import android.os.Handler.Callback;
 
 public final class Looper {
 
@@ -11,8 +10,11 @@ public final class Looper {
 
     public MessageQueue mQueue;
 
-    public static Callback getMainLooper() {
+    public static Looper getMainLooper() {
         throw new RuntimeException("Stub!");
+    }
+
+    public static void prepareMainLooper() {
     }
 
     public static void prepare() {

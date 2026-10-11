@@ -459,6 +459,33 @@ export class Controller {
         return this.clickMatchView(tree, o => o.resource_id_name == resourceId)
     }
 
+    /**
+     * 调用系统服务命令（JSON action 形式）
+     *
+     * @param {string} name 命令名（power/audio/wifi/bluetooth/net/display/...）
+     * @param {string} action action 名
+     * @param {Object} [params] 附加参数
+     *
+     * @returns {Promise<ExecResult>}
+     */
+    async svc(name, action, params = {}) {
+        return this.exec(`${name} ${JSON.stringify({ action, ...params })}`)
+    }
+
+    /**
+     * 等待条件满足（服务端轮询，减少往返）
+     *
+     * @param {'activity'|'view'|'id'} type
+     * @param {string} value activity 名 / 控件文本 / 控件 id
+     * @param {Object} [options] { timeout, gone }
+     *
+     * @returns {Promise<ExecResult>}
+     */
+    async wait(type, value, options = {}) {
+        let params = type === 'activity' ? { activity: value } : type === 'id' ? { id: value } : { text: value }
+        return this.exec(`wait ${JSON.stringify({ action: type, ...params, ...options })}`)
+    }
+
 }
 
 export default Controller
