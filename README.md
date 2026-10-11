@@ -288,29 +288,41 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
 
 
 
-#### TODO（功能规划）
+#### 系统服务命令（framework API）
 
-按优先级排列，逐步实现（均基于 `ServiceManager` + `IXxx.Stub.asInterface` 的 Binder 底座）：
+基于 `ServiceManager` + `IXxx.Stub.asInterface` 的 Binder 底座（无需 Context）：
 
-- [x] **power** 电源管理：重启/关机/锁屏/唤醒、屏幕开关、亮度（`IPowerManager`）
-- [x] **audio** 音频：各 stream 音量设置/获取、静音（`IAudioService`）
-- [x] **wait** 等待条件：等待控件/文本/Activity 出现或消失，带超时（自动化脚本刚需）
-- [ ] **app** 应用管理：启动/停止应用、前台应用、进程列表、杀进程（`IActivityManager`）
-- [x] **clipboard** 剪贴板读取（补全 copy 的反向，`IClipboard`）
-- [x] **net** 网络：连接状态/类型（WiFi/移动/以太网）、代理、流量统计（`IConnectivityManager`）
-- [ ] **media** 媒体控制：播放/暂停/切歌（`IMediaSession`/`IAudioService`）
-- [x] **notification** 通知：列出活动通知、清除、发送（`INotificationManager`）
-- [ ] **telephony** 电话/网络：飞行模式、数据开关、SIM/信号、运营商（`ITelephony`）
-- [ ] **pkg** 包管理：列出/查询已安装应用、权限、组件（`IPackageManager`）
-- [x] **display** 显示：分辨率/密度、旋转锁定、刷新率（`IDisplayManager`）
-- [ ] **location** 定位：GPS 开关、位置模式（`ILocationManager`）
-- [ ] **sensor** 传感器：列出、读当前值（`ISensorManager`）
-- [ ] **battery** 电池：电量/温度/充电状态（`IBatteryStats`）
-- [ ] **thermal** 温度（`IThermalService`）
-- [ ] **vibrate** 震动（`IVibrator`）
-- [ ] **ime** 输入法：切换、显示/隐藏软键盘
-- [x] **shell** 执行 shell 命令
-- [ ] **http** 内置 HTTP 客户端（POST/自定义头/上传，扩展 download）
-- [ ] **record** 屏幕录制（`MediaProjection`，可能需 Context）
+- **wifi** 网络（开关/信息/列表/静态IP/DHCP/连接）
+- **bluetooth** 蓝牙（开关/信息/扫描/已配对设备/配对状态）
+- **power** 电源（重启/锁屏/唤醒/亮屏状态/省电模式）
+- **audio** 音量（各 stream 获取/设置/调节/静音/铃声模式）
+- **net** 网络（连接状态/类型/计量/飞行模式）
+- **clipboard** 剪贴板（读取/是否有/清除）
+- **notification** 通知（是否启用/清除；列表受权限限制，用 shell+dumpsys）
+- **display** 显示（亮度/分辨率/DPI/旋转）
+- **wait** 等待条件（Activity/控件文本/控件id 出现或消失，带超时）
 
-**架构考虑**：系统服务命令增多后，可评估是否统一为 `service {"name":"power","action":...}` 形式（当前每服务独立命令）。
+#### 通用执行命令
+
+- **shell** 执行 shell 命令：`shell {"cmd":"..."}` > `{exitCode, output}`
+- **cmd** 执行 `cmd <service>`：`cmd {"service":"vibrator_manager","args":"list"}`
+- **app** 应用管理：`app {"action":"start|stop|current|list","package":"..."}`
+
+#### 用 shell / cmd 覆盖的功能（无需专门命令）
+
+- **媒体控制**：`shell {"cmd":"input keyevent 85"}`（播放/暂停 85，下一首 87，上一首 88）
+- **包管理**：`shell {"cmd":"pm list packages"}` / `pm path <pkg>` / `pm dump <pkg>`
+- **电池**：`shell {"cmd":"dumpsys battery"}`
+- **温度**：`shell {"cmd":"dumpsys thermalservice"}`
+- **传感器**：`shell {"cmd":"dumpsys sensorservice"}`
+- **定位**：`cmd {"service":"location","args":"is-location-enabled"}`
+- **电话/SIM**：`shell {"cmd":"dumpsys telephony.registry"}`
+- **输入法**：`shell {"cmd":"ime list -s"}` / `ime enable <id>` / `ime set <id>`
+- **震动**：`cmd {"service":"vibrator_manager","args":"feedback LONG_PRESS"}`
+- **HTTP**：`shell {"cmd":"curl -s http://..."}`（POST: `curl -X POST -d '...' url`）
+- **录屏**：`shell {"cmd":"screenrecord --time-limit 10 /sdcard/a.mp4"}`
+- **安装/卸载 APK**：`shell {"cmd":"pm install /data/local/tmp/a.apk"}` / `pm uninstall <pkg>`
+
+#### 架构考虑
+
+系统服务命令增多后，可评估是否统一为 `service {"name":"power","action":...}` 形式（当前每服务独立命令）。
