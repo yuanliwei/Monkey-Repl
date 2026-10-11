@@ -27,6 +27,10 @@ export class Controller {
             activity_controller: true,
         }, options)
 
+        this.shell = null
+        this.socket = null
+        this.disposed = false
+
 
         /** @type {(command: { id: number, data: string }) => Promise<any>} */
         this.execImpl = async (command) => { console.log(command) }
@@ -50,6 +54,7 @@ export class Controller {
             }
             const queryCallbackMap = {}
             const shell = spawn(`adb`, [`-s`, `${device}`, `shell`])
+            this.shell = shell
             shell.stderr.setEncoding('utf-8')
             shell.stdout.setEncoding('utf-8')
             shell.stderr.on('data', (chunk) => { if (this.options.debug) console.error('err', chunk) })
@@ -111,6 +116,7 @@ export class Controller {
             // 连接阶段：TCP 直连 + 重试
             const queryCallbackMap = {}
             let socket = null
+            this.socket = null
             for (let i = 0; i < 20; i++) {
                 try {
                     socket = await new Promise((resolve, reject) => {
@@ -125,6 +131,7 @@ export class Controller {
             }
             if (!socket) throw Error('TCP 连接失败: ' + this.options.ip_address + ':' + port)
             socket.setEncoding('utf-8')
+            this.socket = socket
             socket.on('error', (e) => { if (this.options.debug) console.error('socket err', e) })
             let buffer = ''
             socket.on('data', (chunk) => {
@@ -181,6 +188,33 @@ export class Controller {
 
     async quit() {
         return this.exec('quit')
+    }
+
+    /**
+     * 同步释放资源（支持 using 声明）
+     */
+    [Symbol.dispose]() {
+        this.dispose()
+    }
+
+    /**
+     * 异步释放资源（支持 await using 声明），先发 quit 再关闭连接
+     *
+     * @returns {Promise<void>}
+     */
+    async [Symbol.asyncDispose]() {
+        try { await this.quit() } catch (e) { /* 忽略 quit 失败 */ }
+        this.dispose()
+    }
+
+    /**
+     * 关闭底层 shell/socket 连接（幂等）
+     */
+    dispose() {
+        if (this.disposed) return
+        this.disposed = true
+        if (this.shell) { try { this.shell.kill() } catch (e) { } this.shell = null }
+        if (this.socket) { try { this.socket.destroy() } catch (e) { } this.socket = null }
     }
 
     async press(key) {

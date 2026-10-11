@@ -1,8 +1,9 @@
 import { test } from 'node:test'
+import assert from 'node:assert'
 import { Controller } from './lib.js'
 
 test('android controller flow', async () => {
-    let controller = new Controller({
+    await using controller = new Controller({
         // activity_controller: false,
         // query_view: false,
         // type: 'tcp',
@@ -62,8 +63,29 @@ test('android controller flow', async () => {
     await controller.press(`HOME`)
     await controller.sleep(300)
 
-    await controller.quit()
     console.log('over!')
+
+})
+
+test('get screen size', async () => {
+    await using controller = new Controller({
+        // activity_controller: false,
+        // query_view: false,
+        // type: 'tcp',
+        // ip_address:'192.168.40.86'
+    })
+    await controller.connect()
+
+    let result = await controller.svc('display', 'info')
+    console.log('display info: ', result)
+
+    let info = JSON.parse(result.data)
+    let width = info.logicalWidth
+    let height = info.logicalHeight
+    console.log(`screen size: ${width}x${height}`)
+
+    assert.ok(Number.isInteger(width) && width > 0, 'width should be positive integer')
+    assert.ok(Number.isInteger(height) && height > 0, 'height should be positive integer')
 
 })
 
