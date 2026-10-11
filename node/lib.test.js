@@ -5,7 +5,7 @@ test('android controller flow', async () => {
     let controller = new Controller({
         // activity_controller: false,
         // query_view: false,
-        // type: 'network',
+        // type: 'tcp',
         // ip_address:'192.168.40.86'
     })
     await controller.connect()

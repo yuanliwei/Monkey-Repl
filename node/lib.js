@@ -1,6 +1,7 @@
 import { spawn, execSync } from 'child_process'
 import { fileURLToPath } from 'node:url'
 import { existsSync } from 'node:fs'
+import net from 'node:net'
 
 /**
  * @import {ViewTree, Options, MatchCallback, ExecResult} from './types.js'
@@ -21,7 +22,7 @@ export class Controller {
             name: 'monkey-repl',
             port: 5678,
             ip_address: '',
-            allow_ip_address: '192.168.*',
+            allow_ip_address: '192\\.168\\..*',
             query_view: true,
             activity_controller: true,
         }, options)
@@ -90,9 +91,61 @@ export class Controller {
             })
         }
 
-        if (type == 'network') {
-            // curl http://ip_address:5678 -d help
-            this.execImpl = async (command) => /** @type {any} */ (await (await fetch(`http://${this.options.ip_address}:${this.options.port}`, { method: 'POST', body: JSON.stringify(command) })).json())
+        if (type == 'tcp') {
+            // 启动阶段：push jar + setsid 后台启动（可 skipStart 跳过）
+            if (!this.options.skipStart) {
+                let devicesStr = execSync(`adb devices`).toString()
+                let devices = devicesStr.split('\n').map(o => o.trim()).filter(o => o)
+                devices = devices.map(o => o.split(/\s+/)).filter(o => o.length == 2).map(o => o[0])
+                if (!devices.length) throw Error('没有连接的手机')
+                let device = devices.shift()
+                if (!this.options.skipPush) {
+                    const distJar = fileURLToPath(new URL('../dist/monkey_repl.jar', import.meta.url))
+                    const resourceJar = fileURLToPath(new URL('../resource/monkey_repl.jar', import.meta.url))
+                    const jarPath = existsSync(distJar) ? distJar : resourceJar
+                    execSync(`adb -s ${device} push "${jarPath}" /data/local/tmp/monkey_repl.jar`)
+                }
+                const startCmd = `export CLASSPATH=/data/local/tmp/monkey_repl.jar; setsid app_process /system/bin com.android.commands.monkey.Monkey --type tcp --host 0.0.0.0 --port ${port} --command_type ${command_type} --name ${name} --allow_ip_address ${allow_ip_address} --query_view ${query_view} --activity_controller ${activity_controller} </dev/null >/dev/null 2>&1 &`
+                execSync(`adb -s ${device} shell "${startCmd}"`)
+            }
+            // 连接阶段：TCP 直连 + 重试
+            const queryCallbackMap = {}
+            let socket = null
+            for (let i = 0; i < 20; i++) {
+                try {
+                    socket = await new Promise((resolve, reject) => {
+                        const s = net.connect(port, this.options.ip_address)
+                        s.once('connect', () => resolve(s))
+                        s.once('error', reject)
+                    })
+                    break
+                } catch (e) {
+                    await new Promise((r) => setTimeout(r, 200))
+                }
+            }
+            if (!socket) throw Error('TCP 连接失败: ' + this.options.ip_address + ':' + port)
+            socket.setEncoding('utf-8')
+            socket.on('error', (e) => { if (this.options.debug) console.error('socket err', e) })
+            let buffer = ''
+            socket.on('data', (chunk) => {
+                buffer += chunk
+                let lines = buffer.split('\n')
+                buffer = lines.pop()
+                for (const line of lines) {
+                    let text = line.trim()
+                    if (!text) continue
+                    try {
+                        let o = JSON.parse(text)
+                        let r = queryCallbackMap[o.id]
+                        if (r) { r(o); delete queryCallbackMap[o.id] }
+                    } catch (error) {
+                    }
+                }
+            })
+            this.execImpl = async (command) => new Promise((resolve) => {
+                queryCallbackMap[command.id] = resolve
+                socket.write(JSON.stringify(command) + '\n')
+            })
         }
 
         let result = await this.exec(`echo test`)

@@ -152,12 +152,8 @@ public class Monkey {
         }
 
         IOWrapper ioWrapper = null;
-        if ("udp".equals(args.type())) {
-            ioWrapper = IOWrapper.IOWrapperUDP.build(args);
-        } else if ("tcp".equals(args.type())) {
+        if ("tcp".equals(args.type())) {
             ioWrapper = IOWrapper.IOWrapperTCP.build(args);
-        } else if ("http".equals(args.type())) {
-            ioWrapper = IOWrapper.IOWrapperHTTP.build(args);
         } else { // repl
             ioWrapper = IOWrapper.IOWrapperStdio.build(args);
         }
@@ -289,6 +285,10 @@ public class Monkey {
 
         public int port() {
             return getValue("--port", 5678);
+        }
+
+        public String host() {
+            return getValue("--host", "127.0.0.1");
         }
 
         public String allowIpAddress() {

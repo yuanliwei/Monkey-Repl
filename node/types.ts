@@ -26,7 +26,7 @@ export type MatchCallback = (view: ViewTree) => boolean
 /** Controller 连接配置 */
 export type Options = {
     /** default : repl */
-    type?: 'repl' | 'network';
+    type?: 'repl' | 'tcp';
     /** default : json */
     command_type?: 'text' | 'json';
     /** default : monkey-repl */
@@ -35,7 +35,7 @@ export type Options = {
     port?: number;
     /** default : '' */
     ip_address?: string;
-    /** default : 192.168.* */
+    /** default : 192\.168\..* （192.168 网段） */
     allow_ip_address?: string;
     /** default : true */
     query_view?: boolean;
@@ -45,6 +45,8 @@ export type Options = {
     skipPush?: boolean;
     /** default : false，打印 stderr 调试日志 */
     debug?: boolean;
+    /** default : false，跳过启动 jar（tcp 模式，jar 已在后台时） */
+    skipStart?: boolean;
 }
 
 /** exec 命令返回结果 */
