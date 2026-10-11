@@ -292,24 +292,24 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
 
 按优先级排列，逐步实现（均基于 `ServiceManager` + `IXxx.Stub.asInterface` 的 Binder 底座）：
 
-- [ ] **power** 电源管理：重启/关机/锁屏/唤醒、屏幕开关、亮度（`IPowerManager`）
-- [ ] **audio** 音频：各 stream 音量设置/获取、静音（`IAudioService`）
-- [ ] **wait** 等待条件：等待控件/文本/Activity 出现或消失，带超时（自动化脚本刚需）
+- [x] **power** 电源管理：重启/关机/锁屏/唤醒、屏幕开关、亮度（`IPowerManager`）
+- [x] **audio** 音频：各 stream 音量设置/获取、静音（`IAudioService`）
+- [x] **wait** 等待条件：等待控件/文本/Activity 出现或消失，带超时（自动化脚本刚需）
 - [ ] **app** 应用管理：启动/停止应用、前台应用、进程列表、杀进程（`IActivityManager`）
-- [ ] **clipboard** 剪贴板读取（补全 copy 的反向，`IClipboard`）
-- [ ] **net** 网络：连接状态/类型（WiFi/移动/以太网）、代理、流量统计（`IConnectivityManager`）
+- [x] **clipboard** 剪贴板读取（补全 copy 的反向，`IClipboard`）
+- [x] **net** 网络：连接状态/类型（WiFi/移动/以太网）、代理、流量统计（`IConnectivityManager`）
 - [ ] **media** 媒体控制：播放/暂停/切歌（`IMediaSession`/`IAudioService`）
-- [ ] **notification** 通知：列出活动通知、清除、发送（`INotificationManager`）
+- [x] **notification** 通知：列出活动通知、清除、发送（`INotificationManager`）
 - [ ] **telephony** 电话/网络：飞行模式、数据开关、SIM/信号、运营商（`ITelephony`）
 - [ ] **pkg** 包管理：列出/查询已安装应用、权限、组件（`IPackageManager`）
-- [ ] **display** 显示：分辨率/密度、旋转锁定、刷新率（`IDisplayManager`）
+- [x] **display** 显示：分辨率/密度、旋转锁定、刷新率（`IDisplayManager`）
 - [ ] **location** 定位：GPS 开关、位置模式（`ILocationManager`）
 - [ ] **sensor** 传感器：列出、读当前值（`ISensorManager`）
 - [ ] **battery** 电池：电量/温度/充电状态（`IBatteryStats`）
 - [ ] **thermal** 温度（`IThermalService`）
 - [ ] **vibrate** 震动（`IVibrator`）
 - [ ] **ime** 输入法：切换、显示/隐藏软键盘
-- [ ] **shell** 执行 shell 命令
+- [x] **shell** 执行 shell 命令
 - [ ] **http** 内置 HTTP 客户端（POST/自定义头/上传，扩展 download）
 - [ ] **record** 屏幕录制（`MediaProjection`，可能需 Context）
 

@@ -108,6 +108,7 @@ public class MonkeySource implements MonkeyEventSource {
         COMMAND_MAP.put("shell", new ShellCommand());
         COMMAND_MAP.put("notification", new NotificationCommand());
         COMMAND_MAP.put("display", new DisplayCommand());
+        COMMAND_MAP.put("app", new AppCommand());
     }
 
     /**
@@ -1117,6 +1118,14 @@ public class MonkeySource implements MonkeyEventSource {
         // display <json>
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
             return com.android.commands.monkey.DisplayCommand.execute(command);
+        }
+    }
+
+    /** app 命令（JSON 参数，内部 shell/am） */
+    private static class AppCommand implements MonkeyCommand {
+        // app <json>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return com.android.commands.monkey.AppCommand.execute(command);
         }
     }
 }
