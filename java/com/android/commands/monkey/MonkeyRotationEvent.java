@@ -48,14 +48,19 @@ public class MonkeyRotationEvent extends MonkeyEvent {
                                ", persist=" + mPersist);
         }
 
-        // inject rotation event
+        // 反射调用 freezeRotation/thawRotation，兼容不同 Android 版本（新版本已移除这些方法）
         try {
-            iwm.freezeRotation(mRotationDegree);
+            java.lang.reflect.Method freeze = iwm.getClass().getMethod("freezeRotation", int.class);
+            freeze.invoke(iwm, mRotationDegree);
             if (!mPersist) {
-                iwm.thawRotation();
+                java.lang.reflect.Method thaw = iwm.getClass().getMethod("thawRotation");
+                thaw.invoke(iwm);
             }
             return MonkeyEvent.INJECT_SUCCESS;
-        } catch (RemoteException ex) {
+        } catch (NoSuchMethodException e) {
+            // 新 Android 无 freezeRotation，跳过旋转恢复
+            return MonkeyEvent.INJECT_SUCCESS;
+        } catch (Throwable ex) {
             return MonkeyEvent.INJECT_ERROR_REMOTE_EXCEPTION;
         }
     }

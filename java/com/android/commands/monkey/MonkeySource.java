@@ -98,6 +98,7 @@ public class MonkeySource implements MonkeyEventSource {
         COMMAND_MAP.put("listdir", new ListDirCommand());
         COMMAND_MAP.put("mkdir", new MkdirCommand());
         COMMAND_MAP.put("exists", new ExistsCommand());
+        COMMAND_MAP.put("wifi", new WifiCommand());
     }
 
     /**
@@ -1026,6 +1027,14 @@ public class MonkeySource implements MonkeyEventSource {
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
             if (command.size() != 2) return EARG;
             return new MonkeyCommandReturn(true, String.valueOf(new File(command.get(1)).exists()));
+        }
+    }
+
+    /** wifi 命令（JSON 参数，调 framework API） */
+    private static class WifiCommand implements MonkeyCommand {
+        // wifi <json>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return NetworkCommand.execute(command);
         }
     }
 }
