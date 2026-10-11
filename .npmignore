@@ -1,0 +1,14 @@
+# 不发布：Java 源码、资源、构建产物、构建脚本
+java/
+resource/MANIFEST.MF
+resource/source_list
+dist/
+node_modules/
+node/build.js
+node/lib.test.js
+jsconfig.json
+.gitignore
+.git/
+*.class
+android.jar
+build/

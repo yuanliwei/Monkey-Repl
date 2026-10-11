@@ -1,3 +1,5 @@
 *.class
 android.jar
 build/
+dist/
+node_modules/

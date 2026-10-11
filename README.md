@@ -14,10 +14,22 @@ monkey-repl : 一个通过 usb 控制 Android 设备的自动化工具，修改�
 - 可以获取 `webview` 中的控件
 - 播放音频
 
+
+#### 构建
+- `npm install` 安装依赖
+- `npm run build` 编译打包，产物 `resource/monkey_repl.jar`
+- 依赖 JDK 21 + Android SDK build-tools（默认 36.1.0，可用 `BUILD_TOOLS_DIR` 环境变量指定）
+
+#### 目录结构
+- `java/` Java 源码（`com/` 为核心，`android/`/`dalvik/`/`org/` 为 stub）
+- `node/` Node 脚本（`build.js` 编译、`lib.js` 客户端、`lib.test.js` 测试）
+- `resource/` 资源（`monkey_repl.jar`、`MANIFEST.MF`、`source_list`）
+- `dist/` 构建产物
+
 #### 使用方式
 - 使用 usb 连接手机
 - 打开手机的 usb 调试模式
-- 进入 start 目录，运行 start.cmd 进入交互窗口
+- 通过 `node/lib.js` 的 `Controller` 连接设备（自动推送 jar 到 `/data/local/tmp/monkey_repl.jar`）
 - 输入 `queryview getlocation` 按 `enter`
 - 输入 `queryview gettree text` 按 `enter`
 - 退出 `quit` 按 `enter`
@@ -35,7 +47,7 @@ monkey-repl --type repl --command_type text --name abc-repl --port 5678 --allow_
 ```
 
 #### 脚本
-- 参考 demo 目录
+- 参考 `node/lib.test.js`
 
 #### 功能清单
 - 模拟按键事件
