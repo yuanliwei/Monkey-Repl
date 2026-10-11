@@ -1,0 +1,10 @@
+{
+    "java.project.sourcePaths": [
+        "java"
+    ],
+    "java.project.outputPath": "dist/ide",
+    "java.project.referencedLibraries": [],
+    "java.import.maven.enabled": false,
+    "java.import.gradle.enabled": false,
+    "java.autobuild.enabled": true
+}
