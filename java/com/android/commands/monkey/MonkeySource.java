@@ -105,6 +105,7 @@ public class MonkeySource implements MonkeyEventSource {
         COMMAND_MAP.put("wait", new WaitCommand());
         COMMAND_MAP.put("clipboard", new ClipboardCommand());
         COMMAND_MAP.put("net", new NetCommand());
+        COMMAND_MAP.put("shell", new ShellCommand());
     }
 
     /**
@@ -1090,6 +1091,14 @@ public class MonkeySource implements MonkeyEventSource {
         // net <json>
         public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
             return com.android.commands.monkey.NetCommand.execute(command);
+        }
+    }
+
+    /** shell 命令（执行 shell 命令） */
+    private static class ShellCommand implements MonkeyCommand {
+        // shell <cmd>
+        public MonkeyCommandReturn translateCommand(List<String> command, CommandQueue queue) {
+            return com.android.commands.monkey.ShellCommand.execute(command);
         }
     }
 }
