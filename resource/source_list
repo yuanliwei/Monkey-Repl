@@ -24,3 +24,4 @@ java/com/android/commands/monkey/ClipboardCommand.java
 java/com/android/commands/monkey/NetCommand.java
 java/com/android/commands/monkey/ShellCommand.java
 java/com/android/commands/monkey/NotificationCommand.java
+java/com/android/commands/monkey/DisplayCommand.java
