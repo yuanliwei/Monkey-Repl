@@ -9,7 +9,6 @@ import android.app.IActivityManager;
 import android.content.ComponentName;
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import com.android.commands.monkey.MonkeySource.MonkeyCommandReturn;
 
 /** wait 命令实现（轮询等待条件满足，JSON 参数） */
 public class WaitCommand {
