@@ -22,7 +22,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
-import java.net.URL;
+import java.net.URI;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -598,7 +598,7 @@ public class MonkeySource implements MonkeyEventSource {
                     outFile.delete();
                 }
                 OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(outFile, false));
-                HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
+                HttpURLConnection connection = (HttpURLConnection) URI.create(url).toURL().openConnection();
                 connection.connect();
                 InputStream inputStream = connection.getInputStream();
 
